@@ -51,4 +51,22 @@
           "dnf"))
 
 
+(test instantiate
+  (finishes (make-instance 'sat-instance :form '(and a b c)))
+  (finishes (make-instance 'sat-instance :form '(or a b c)))
+  (finishes (make-instance 'sat-instance :form '(and (or a !b c) d)))
+  (finishes (make-instance 'sat-instance :form '(and (and (and a)))))
+  (finishes (make-instance 'sat-instance :form '(not (and a b))))
+  (finishes (make-instance 'sat-instance :form '(not (or a b)))))
+
+(test print-cnf
+  (fresh-line)
+  (finishes (print-cnf (make-instance 'sat-instance :form '(and a b c))))
+  (finishes (print-cnf (make-instance 'sat-instance :form '(or a b c))))
+  (finishes (print-cnf (make-instance 'sat-instance :form '(and (or a !b c) d))))
+  (finishes (print-cnf (make-instance 'sat-instance :form '(and (and (and a))))))
+  (finishes (print-cnf (make-instance 'sat-instance :form '(not (and a b)))))
+  (finishes (print-cnf (make-instance 'sat-instance :form '(not (or a b))))))
+
+
 
