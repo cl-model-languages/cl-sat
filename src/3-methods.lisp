@@ -11,21 +11,12 @@
     (t
      (call-next-method))))
 
-;; swank/gray::slime-output-stream
-;; (defvar *interactive-output*
-;;     (if (featurep :swank)
-;; 
-;;         *standard-output*))
-;; 
-;; (defvar *interactive-error*
-;;     (if (featurep :swank)
-;;         swank/gray::slime-output-stream
-;;         *error-output*))
+(defvar *instance*)
 
-(defmethod solve ((i sat-instance) solver &rest args &key &allow-other-keys)
+(defmethod solve ((*instance* sat-instance) solver &rest args &key &allow-other-keys)
   (with-temp (tmp :template "cnf.XXXXXXX")
     (with-output-to-file (s tmp :if-exists :supersede)
-      (print-cnf i s))
+      (print-cnf *instance* s))
     (apply #'solve (pathname tmp) solver args)))
 
 (defmethod solve ((i list) solver &rest args &key &allow-other-keys)

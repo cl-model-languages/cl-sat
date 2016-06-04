@@ -1,13 +1,39 @@
 
-* Cl-Sat  - Common Lisp API to Boolean SAT Solvers
+* CL-SAT  - Common Lisp API to Boolean SAT Solvers
 
-This library does not provide actual implementation to each solver instance.
+This library provides a simple S-exp -> CNF translator and an API to Boolean SAT solvers.
+  
+It does not provide actual implementation to each solver instance.
 
-Rather, it just provides an interface function `solve` and other special variables.
+** Usage
+   
+Currently there is only one implementation, a state-of-the-art solver Minisat2.
+In order to load and run minisat2, run follows:
+
+: (ql:quickload :cl-sat.minisat)
+
+Then run follows:
+
+: (cl-sat:solve '(and (or a b) (or a !b c)) :minisat)
+: ->
+: ((C . 1) (B . 0) (A . 1)), T
+
+** Misc
+
+Each solver implementation should provide a method =(solve pathname (eql :solvername) &key &allow-other-keys)=.
+
+It should return a list of true variables as the first value, a boolean indicating SAT when true, and a
+boolean indicating whether the result is determined. For example,
+
++ =NIL,NIL,NIL= means the solver failed due to the timelimit etc. so the result was indeterminable.
++ =NIL,T,T= means that the problem is SAT by assigning all variables to false.
++ =NIL,NIL,T= means that the problem is UNSAT.
 
 
 
 ** Dependencies
+
+Required libraries depends on the solver instance. See the corresponding documentation.
 
 This library is at least tested on implementation listed below:
 

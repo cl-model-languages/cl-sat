@@ -12,7 +12,9 @@
    #:sat-instance
    #:form-cnf
    #:print-cnf
-   #:with-temp))
+   #:with-temp
+   #:*instance*
+   #:sat-instance-variables))
 (in-package :cl-sat)
 
 
