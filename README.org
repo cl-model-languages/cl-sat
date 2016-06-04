@@ -3,7 +3,9 @@
 
 This library provides a simple S-exp -> CNF translator and an API to Boolean SAT solvers.
   
-It does not provide actual implementation to each solver instance.
+It does not provide actual implementation to each solver instance by itself. Consult the following:
+
++ https://github.com/guicho271828/cl-sat.minisat
 
 ** Usage
    
