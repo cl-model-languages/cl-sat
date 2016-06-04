@@ -11,7 +11,8 @@
    #:solve
    #:sat-instance
    #:form-cnf
-   #:print-cnf))
+   #:print-cnf
+   #:with-temp))
 (in-package :cl-sat)
 
 
