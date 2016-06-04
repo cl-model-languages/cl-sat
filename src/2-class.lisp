@@ -13,23 +13,34 @@
     (t
      (call-next-method))))
 
+;; swank/gray::slime-output-stream
+;; (defvar *interactive-output*
+;;     (if (featurep :swank)
+;; 
+;;         *standard-output*))
+;; 
+;; (defvar *interactive-error*
+;;     (if (featurep :swank)
+;;         swank/gray::slime-output-stream
+;;         *error-output*))
+
 (defgeneric solve (input solver-designator &rest args &key &allow-other-keys))
 
 (defmethod solve ((i sat-instance) solver &rest args &key &allow-other-keys)
-  (aplpy #'solve
+  (apply #'solve
          (make-string-input-stream (with-output-to-string (s) (print-cnf i s)))
          solver
          args))
 
 (defmethod solve ((i list) solver &rest args &key &allow-other-keys)
-  (aplpy #'solve
-         (make-instance sat-instance :form i)
+  (apply #'solve
+         (make-instance 'sat-instance :form i)
          solver
          args))
 
+
 (defun sat-instance-variables (instance)
-  (ematch instance
-    ((sat-instance cnf)
-     (remove-duplicates
-      (set-difference
-       (flatten cnf) '(and or not))))))
+  (remove-duplicates
+   (set-difference
+    (flatten (cnf instance))
+    '(and or not))))
