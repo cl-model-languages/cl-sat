@@ -16,7 +16,9 @@ Then run follows:
 
 : (cl-sat:solve '(and (or a b) (or a !b c)) :minisat)
 : ->
-: ((C . 1) (B . 0) (A . 1)), T
+: (C A)
+: NIL
+: NIL
 
 ** Misc
 
