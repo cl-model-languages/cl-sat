@@ -23,7 +23,8 @@ In order to load and run minisat2, run follows:
 
 ** solver API
 
-Each solver implementation should provide a method =(solve pathname (eql :solvername) &key &allow-other-keys)=.
+Each solver implementation should provide a method =(solve pathname (eql :solvername) &rest options)=.
+Additional arguments are passed to the underlying solvers (unless explicitly specified).
 
 It should return a list of true variables as the first value, a boolean indicating SAT when true, and a
 boolean indicating whether the result is determined. For example,
