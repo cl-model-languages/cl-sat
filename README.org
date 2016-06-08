@@ -35,9 +35,9 @@ boolean indicating whether the result is determined. For example,
 
 ** S-exp -> CNF converter
 
-The input list should be a list whose first element is an =and=.
-Specifying =or= is optional.
-Negated/false atoms are specified by =not=.
+The input list is interpreted as a CNF formula.
+=AND= and =OR= are sometimes implied.
+Negated/false atoms are specified by =NOT=.
 
 Each term can be specified by a symbol or a number, but do not mix two styles (it may contain bugs).
 Symbols with =!= prefix and negative numbers are treated as false atoms.
@@ -45,6 +45,10 @@ Symbols with =!= prefix and negative numbers are treated as false atoms.
 Examples:
 
 #+BEGIN_SRC lisp
+a ;; -> equivalent to (and (or a))
+
+(or a b) ;; -> equivalent to (and (or a b))
+
 (and a b c) ;; -> equivalent to (and (or a) (or b) (or c))
 
 (and 1 !b c) ;; -> undefined
