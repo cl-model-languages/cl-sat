@@ -3,26 +3,25 @@
 
 This library provides a simple S-exp -> CNF translator and an API to Boolean SAT solvers.
   
-It does not provide actual implementation to each solver instance by itself. Consult the following:
+It does not provide actual implementation to each solver instance by itself.
+Currently there are two implementations. Consult the following:
 
 + https://github.com/guicho271828/cl-sat.minisat
++ https://github.com/guicho271828/cl-sat.glucose
 
 ** Usage
    
-Currently there is only one implementation, a state-of-the-art solver Minisat2.
 In order to load and run minisat2, run follows:
 
 : (ql:quickload :cl-sat.minisat)
-
-Then run follows:
-
+:
 : (cl-sat:solve '(and (or a b) (or a !b c)) :minisat)
 : ->
 : (C A)
 : T
 : T
 
-** Misc
+** solver API
 
 Each solver implementation should provide a method =(solve pathname (eql :solvername) &key &allow-other-keys)=.
 
@@ -33,7 +32,24 @@ boolean indicating whether the result is determined. For example,
 + =NIL,T,T= means that the problem is SAT by assigning all variables to false.
 + =NIL,NIL,T= means that the problem is UNSAT.
 
+** S-exp -> CNF converter
 
+The input list should be a list whose first element is an =and=.
+Specifying =or= is optional.
+Negated/false atoms are specified by =not=.
+
+Each term can be specified by a symbol or a number, but do not mix two styles (it may contain bugs).
+Symbols with =!= prefix and negative numbers are treated as false atoms.
+
+Examples:
+
+#+BEGIN_SRC lisp
+(and a b c) ;; -> equivalent to (and (or a) (or b) (or c))
+
+(and 1 !b c) ;; -> undefined
+
+(and a (or !b c)) ;; equivalent to (and (or a) (or (not b) c))
+#+END_SRC
 
 ** Dependencies
 
