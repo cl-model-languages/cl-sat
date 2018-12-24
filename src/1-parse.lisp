@@ -12,6 +12,16 @@ DNF: Disjunctive Normal Form. (Not Duke Nukem Forever) ORs of ANDs of positive /
 
 ANF: Algebraic Normal Form. XORs of ANDs of positive literals. No NOTs. This form is canonical -- there is only one form up to permutations.
 
+
+
+We first convert a form into a SYMBOLIC FORM:
+
++ convert every numbers into a symbol in CL-SAT.NAMESPACE PACKAGE,
++ convert every negative numbers into (NOT VAR) form, 
++ convert every !-negated symbols into (NOT VAR) form.
+
+We next convert it into an NNF, and finally convert it into a CNF.
+
 |#
 
 (in-package :cl-sat)
