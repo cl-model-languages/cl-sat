@@ -14,7 +14,8 @@
    #:print-cnf
    #:with-temp
    #:*instance*
-   #:sat-instance-variables))
+   #:sat-instance-variables
+   #:to-nnf))
 (in-package :cl-sat)
 
 

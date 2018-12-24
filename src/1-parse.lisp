@@ -64,11 +64,8 @@ Note that it does not guarantee to return any type of normal forms (e.g. NNF,CNF
     ((list* head rest)
      (list* head (mapcar #'symbolicate-form rest)))))
 
-(defun composite-negate-p (form)
-  "Returns true if a form is a negation of a tree."
-  (ematch form
-    ((list 'not (symbol)) nil)
-    ((list 'not (list* _)) t)))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; NNF
 
 (defun negate (form)
   "Simple negation not involving De-Morgan's law."
@@ -77,6 +74,32 @@ Note that it does not guarantee to return any type of normal forms (e.g. NNF,CNF
      form)
     (_
      `(not ,form))))
+
+(defun to-nnf (form)
+  "Applying De-Morgan's law, the resulting tree contains negations
+only at the leaf nodes."
+  (ematch form
+    ((list* 'and rest) `(and ,@(mapcar #'to-nnf rest)))
+    ((list* 'or rest)  `(or  ,@(mapcar #'to-nnf rest)))
+    ((list 'not (list* 'or rest))
+     ;; De-Morgan's law
+     `(and ,@(mapcar (compose #'to-nnf #'negate) rest)))
+    ((list 'not (list* 'and rest))
+     ;; De-Morgan's law
+     `(or  ,@(mapcar (compose #'to-nnf #'negate) rest)))
+    ((list 'not (symbol))
+     form)
+    ((symbol)
+     form)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; CNF
+
+(defun composite-negate-p (form)
+  "Returns true if a form is a negation of a tree."
+  (ematch form
+    ((list 'not (symbol)) nil)
+    ((list 'not (list* _)) t)))
 
 (defun %form->cnf (form)
   ;; (and (or ...) (or ...))
