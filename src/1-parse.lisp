@@ -1,3 +1,19 @@
+#|
+
+Parses a s-exp and turn it into a logical form that is compatible to SAT solvers
+
+Notes:
+
+NNF: Negation Normal Form. a tree of ANDs and ORs ending with either positive / negative literals. There are no NOTs applied to ANDs and ORs
+
+CNF: Conjunctive Normal Form. ANDs of ORs of positive / negative literals. Also known as "product of sums" forms.
+
+DNF: Disjunctive Normal Form. (Not Duke Nukem Forever) ORs of ANDs of positive / negative literals.
+
+ANF: Algebraic Normal Form. XORs of ANDs of positive literals. No NOTs. This form is canonical -- there is only one form up to permutations.
+
+|#
+
 (in-package :cl-sat)
 ;; allow both (not symbol) and !symbol
 ;; allow numbers (as in cnf)
@@ -6,7 +22,11 @@
   "intern a number to a symbol"
   (intern (format nil "VAR~a" number)))
 
-(defun normalize-form (tree)
+(defun symbolicate-form (tree)
+  "
+This function is the first step of converting the input into a normal form.
+It normalizes the input tree containing numbers and !-negated vars into AND-OR-NOT tree of symbols.
+Note that it does not guarantee to return any type of normal forms (e.g. NNF,CNF,DNF,ANF)."
   (ematch tree
     ((symbol :name (and name (string* #\!)))
      `(not ,(intern (subseq name 1) (symbol-package tree))))
@@ -17,14 +37,17 @@
     ((> 0)
      (var tree))
     ((cons a b)
-     (cons (normalize-form a)
-           (normalize-form b)))))
+     (cons (symbolicate-form a)
+           (symbolicate-form b)))))
 
 (defun composite-negate-p (form)
-  (match form
+  "Returns true if a form is a negation of a tree."
+  (ematch form
+    ((list 'not (symbol)) nil)
     ((list 'not (list* _)) t)))
 
 (defun negate (form)
+  "Simple negation not involving De-Morgan's law."
   (ematch form
     ((list 'not form)
      form)
@@ -63,4 +86,4 @@
 (defun form-cnf (form)
   (flatten-cnf
    (%form->cnf
-    (normalize-form form))))
+    (symbolicate-form form))))
