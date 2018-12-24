@@ -56,7 +56,7 @@ Note that it does not guarantee to return any type of normal forms (e.g. NNF,CNF
          ((evenp pos)
           ;; positive literal. !s in the middle of the names are not considered
           ;; here, we consider only those at the beginning of literal name.
-          tree)
+          (intern (subseq name pos) (symbol-package tree)))
          (t
           `(not ,(intern (subseq name pos) (symbol-package tree)))))))
     ((< 0)
