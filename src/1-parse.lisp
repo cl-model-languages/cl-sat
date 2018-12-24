@@ -26,19 +26,27 @@ ANF: Algebraic Normal Form. XORs of ANDs of positive literals. No NOTs. This for
   "
 This function is the first step of converting the input into a normal form.
 It normalizes the input tree containing numbers and !-negated vars into AND-OR-NOT tree of symbols.
-Note that it does not guarantee to return any type of normal forms (e.g. NNF,CNF,DNF,ANF)."
+Note that it does not guarantee to return any type of normal forms (e.g. NNF,CNF,DNF,ANF).
+"
   (ematch tree
-    ((symbol :name (and name (string* #\!)))
-     `(not ,(intern (subseq name 1) (symbol-package tree))))
-    ((symbol)
-     tree)
+    ((symbol name)
+     (let ((pos (position-if (lambda (c) (char/= c #\!)) name)))
+       (cond
+         ((null pos)
+          ;; all characters are !, 
+          (error "Found an invalid symbol ~a whose name consists of ! only." tree))
+         ((evenp pos)
+          ;; positive literal. !s in the middle of the names are not considered
+          ;; here, we consider only those at the beginning of literal name.
+          tree)
+         (t
+          `(not ,(intern (subseq name pos) (symbol-package tree)))))))
     ((< 0)
      `(not ,(var (- tree))))
     ((> 0)
      (var tree))
-    ((cons a b)
-     (cons (symbolicate-form a)
-           (symbolicate-form b)))))
+    ((list* head rest)
+     (list* head (mapcar #'symbolicate-form rest)))))
 
 (defun composite-negate-p (form)
   "Returns true if a form is a negation of a tree."
