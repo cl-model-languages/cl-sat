@@ -10,14 +10,20 @@
 ;; 1 -3 0
 ;; 2 3 -1 0
 
-(defun print-cnf (instance &optional (stream *standard-output*))
+
+(defvar *verbosity* 0)
+(declaim (type (integer 0 3) *verbosity*))
+
+(defun print-cnf (instance &optional (stream *standard-output*) (*verbosity* *verbosity*))
   (ematch instance
     ((sat-instance cnf variables)
-     (pprint-logical-block (stream nil :per-line-prefix "c ")
-       (format stream "~&~a" cnf)
-       (iter (for i from 0)
-             (for v in variables)
-             (format stream "~&Variable ~a : ~a" i v)))
+     (when (<= 1 *verbosity*)
+       (pprint-logical-block (stream nil :per-line-prefix "c ")
+         (when (<= 2 *verbosity*)
+           (format stream "~&~a" cnf))
+         (iter (for i from 0)
+               (for v in variables)
+               (format stream "~&Variable ~a : ~a" i v))))
 
      (match cnf
        ((or (list* 'and clauses)
@@ -29,7 +35,8 @@
               (ematch c
                 ((or (list* 'or terms)
                      (<> terms (list c)))
-                 (format stream "~&c ~a" c)
+                 (when (<= 3 *verbosity*)
+                   (format stream "~&c ~a" c))
                  (format stream "~&~{~a ~}0"
                          (iter (for term in terms)
                                (collect

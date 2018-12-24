@@ -18,7 +18,8 @@
    #:to-cnf
    #:to-cnf-naive
    #:to-cnf-tseytin
-   #:symbolicate-form))
+   #:symbolicate-form
+   #:*verbosity*))
 (in-package :cl-sat)
 
 
