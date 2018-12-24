@@ -12,26 +12,32 @@
 
 (defun print-cnf (instance &optional (stream *standard-output*))
   (ematch instance
-    ((sat-instance :cnf (list* 'and clauses)
-                   variables)
+    ((sat-instance cnf variables)
      (pprint-logical-block (stream nil :per-line-prefix "c ")
        (iter (for i from 0)
              (for v in variables)
              (format stream "~&Variable ~a : ~a" i v)))
-     (format stream "~&p cnf ~A ~A" (length variables) (length clauses))
-     (iter (for c in clauses)
-           (ematch c
-             ((list* 'or terms)
-              (format stream "~&c ~a" c)
-              (format stream "~&~{~a ~}0"
-                      (iter (for term in terms)
-                            (collect
-                                (ematch term
-                                  ((list 'not atom)
-                                   (- (1+ (position atom variables))))
-                                  (atom
-                                   (1+ (position atom variables))))))))))
-     (fresh-line stream))))
+
+     (match cnf
+       ((or (list* 'and clauses)
+            (<> clauses (list cnf)))
+        (format stream "~&p cnf ~A ~A" (length variables) (length clauses))
+
+        
+        (iter (for c in clauses)
+              (ematch c
+                ((or (list* 'or terms)
+                     (<> terms (list c)))
+                 (format stream "~&c ~a" c)
+                 (format stream "~&~{~a ~}0"
+                         (iter (for term in terms)
+                               (collect
+                                   (ematch term
+                                     ((list 'not atom)
+                                      (- (1+ (position atom variables))))
+                                     (atom
+                                      (1+ (position atom variables))))))))))
+        (fresh-line stream))))))
 
 
 
