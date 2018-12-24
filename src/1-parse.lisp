@@ -16,7 +16,7 @@ ANF: Algebraic Normal Form. XORs of ANDs of positive literals. No NOTs. This for
 
 We first convert a form into a SYMBOLIC FORM:
 
-+ convert every numbers into a symbol in CL-SAT.NAMESPACE PACKAGE,
++ convert every numbers into a symbol in CL-SAT.VARIABLES PACKAGE,
 + convert every negative numbers into (NOT VAR) form, 
 + convert every !-negated symbols into (NOT VAR) form.
 
@@ -28,11 +28,12 @@ We next convert it into an NNF, and finally convert it into a CNF.
 ;; allow both (not symbol) and !symbol
 ;; allow numbers (as in cnf)
 
-(defpackage cl-sat.namespace)
+(defpackage cl-sat.variables)
+(defpackage cl-sat.aux-variables)
 
 (defun var (number)
   "intern a number to a symbol"
-  (intern (format nil "VAR~a" number) :cl-sat.namespace))
+  (intern (format nil "VAR~a" number) :cl-sat.variables))
 
 (defun symbolicate-form (tree)
   "
