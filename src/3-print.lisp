@@ -14,6 +14,7 @@
   (ematch instance
     ((sat-instance cnf variables)
      (pprint-logical-block (stream nil :per-line-prefix "c ")
+       (format stream "~&~a" cnf)
        (iter (for i from 0)
              (for v in variables)
              (format stream "~&Variable ~a : ~a" i v)))
