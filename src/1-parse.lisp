@@ -18,9 +18,11 @@ ANF: Algebraic Normal Form. XORs of ANDs of positive literals. No NOTs. This for
 ;; allow both (not symbol) and !symbol
 ;; allow numbers (as in cnf)
 
+(defpackage cl-sat.namespace)
+
 (defun var (number)
   "intern a number to a symbol"
-  (intern (format nil "VAR~a" number)))
+  (intern (format nil "VAR~a" number) :cl-sat.namespace))
 
 (defun symbolicate-form (tree)
   "
