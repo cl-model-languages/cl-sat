@@ -18,6 +18,36 @@
 
 ;; run test with (run! test-name) 
 
+(test symbolicate-form
+
+  (is (equal (symbolicate-form
+              '(and (or a !b c) d))
+             '(and (or a (not b) c) d)))
+
+  (is (equal (symbolicate-form
+              '(and (or a 1 c) d))
+             '(and (or a cl-sat.namespace::VAR1 c) d)))
+  
+  (is (equal (symbolicate-form
+              '(and (or a -1 c) d))
+             '(and (or a (not cl-sat.namespace::VAR1) c) d)))
+
+  (signals error (symbolicate-form '!!!!!))
+  
+  ;; https://www.satcompetition.org/2009/format-benchmarks2009.html
+  ;; 0 is not allowed as a literal
+  (signals error (symbolicate-form 0)))
+
+(test to-nnf
+
+  (is (equal (to-nnf
+              '(not (or a b c)))
+             '(and (not a) (not b) (not c))))
+
+  (is (equal (to-nnf
+              '(not (and a b c)))
+             '(or (not a) (not b) (not c)))))
+
 (test form-cnf
   
   (is (equal (form-cnf '(and a b c))
@@ -44,12 +74,7 @@
   (is (equal (form-cnf '!!!a) '(and (or (not a))))
       "negate")
 
-  (signals error (form-cnf '(and !!!!!)))
 
-  ;; https://www.satcompetition.org/2009/format-benchmarks2009.html
-  ;; 0 is not allowed as a literal
-  (signals error (form-cnf 0))
-  
   (is (equal (form-cnf '(and (and (and a))))
              '(and (or a)))
       "flatten")
