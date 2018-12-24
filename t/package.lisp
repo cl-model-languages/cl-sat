@@ -34,6 +34,17 @@
                (or a (not b) c)
                (or d)))
       "negate")
+
+  (is (equal (form-cnf 'a) '(and (or a)))
+      "negate")
+  (is (equal (form-cnf '!a) '(and (or (not a))))
+      "negate")
+  (is (equal (form-cnf '!!a) '(and (or a)))
+      "negate")
+  (is (equal (form-cnf '!!!a) '(and (or (not a))))
+      "negate")
+
+  (signals error (form-cnf '(and !!!!!)))
   
   (is (equal (form-cnf '(and (and (and a))))
              '(and (or a)))
