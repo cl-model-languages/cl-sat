@@ -45,6 +45,10 @@ Note that it does not guarantee to return any type of normal forms (e.g. NNF,CNF
      `(not ,(var (- tree))))
     ((> 0)
      (var tree))
+    ((= 0)
+     ;; https://www.satcompetition.org/2009/format-benchmarks2009.html
+     ;; 0 is not allowed as a literal
+     (signal 'type-error :expected-type '(or symbol cons (and integer (not (eql 0)))) tree))
     ((list* head rest)
      (list* head (mapcar #'symbolicate-form rest)))))
 
