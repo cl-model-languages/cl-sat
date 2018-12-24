@@ -35,6 +35,11 @@ We next convert it into an NNF, and finally convert it into a CNF.
   "intern a number to a symbol"
   (intern (format nil "VAR~a" number) :cl-sat.variables))
 
+(defun aux (number)
+  "intern a number to an auxiliary symbol"
+  (intern (format nil "AUX~a" number) :cl-sat.aux-variables))
+
+
 (defun symbolicate-form (tree)
   "
 This function is the first step of converting the input into a normal form.
@@ -162,3 +167,41 @@ only at the leaf nodes."
   (dispatch form t #'identity))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Tseytin transformation
+
+(defvar *aux-var-index*)
+
+(defun to-cnf-tseytin (form)
+  "Convert a NNF into a flattened CNF.
+OR branches containing ANDs that could result in an exponential CNF
+are converted into a linear-sized equisatisfiable formula
+via Tseytin transformation by Tseytin 1968.
+
+aux-variables are generated in CL-SAT.AUX-VARIABLES package.
+
+G.S. Tseytin: On the complexity of derivation in propositional calculus. Presented at the Leningrad Seminar on Mathematical Logic held in September 1966.
+
+"
+  (let ((*aux-var-index* -1)
+        (subformulas (make-hash-table :test 'equal))
+        conjunctions)
+    ;; collect subformulas
+    (labels ((aux+ () (aux (incf *aux-var-index*)))
+             (rec (form)
+               (match form
+                 ((list (or 'and 'or) single)
+                  (rec single))
+                 ((list* (and op (or 'and 'or)) rest)
+                  (let ((aux (ensure-gethash form subformulas (aux+))) ; no duplicates
+                        (substituted `(,op ,@(mapcar #'rec rest))))
+                    ;; add a new formula: (aux <=> substituted)  =  ((aux => substituted) && (aux <= substituted))
+                    (push `(or ,(negate aux) ,substituted) conjunctions)
+                    (push `(or ,aux ,(negate substituted)) conjunctions)
+                    aux))
+                 (_
+                  ;; return literals as it is
+                  form))))
+      (rec form))
+    (to-cnf-naive (to-nnf `(and ,@conjunctions)))))
+
+
