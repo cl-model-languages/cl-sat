@@ -11,7 +11,16 @@
         :trivia :alexandria :iterate))
 (in-package :cl-sat.test)
 
-
+(defun s= (a b)
+  "equivalence between two logical formula"
+  (match* (a b)
+    (((list* op1 rest1)
+      (list* op2 rest2))
+     (and (eq op1 op2)
+          (set-equal rest1 rest2 :test 's=)))
+    (((symbol)
+      (symbol))
+     (eq a b))))
 
 (def-suite :cl-sat)
 (in-suite :cl-sat)
@@ -20,81 +29,102 @@
 
 (test symbolicate-form
 
-  (is (equal '(and (or a (not b) c) d)
-             (symbolicate-form
-              '(and (or a !b c) d))))
+  (is (s= '(and (or a (not b) c) d)
+          (symbolicate-form
+           '(and (or a !b c) d))))
 
-  (is (equal '(and (or a cl-sat.variables::VAR1 c) d)
-             (symbolicate-form
-              '(and (or a 1 c) d))))
+  (is (s= '(and (or a cl-sat.variables::VAR1 c) d)
+          (symbolicate-form
+           '(and (or a 1 c) d))))
   
-  (is (equal '(and (or a (not cl-sat.variables::VAR1) c) d)
-             (symbolicate-form
-              '(and (or a -1 c) d))))
+  (is (s= '(and (or a (not cl-sat.variables::VAR1) c) d)
+          (symbolicate-form
+           '(and (or a -1 c) d))))
 
   (signals error (symbolicate-form '!!!!!))
   
-  (is (equal 'a       (symbolicate-form 'a)))
-  (is (equal '(not a) (symbolicate-form '!a)))
-  (is (equal 'a       (symbolicate-form '!!a)))
-  (is (equal '(not a) (symbolicate-form '!!!a)))
+  (is (s= 'a       (symbolicate-form 'a)))
+  (is (s= '(not a) (symbolicate-form '!a)))
+  (is (s= 'a       (symbolicate-form '!!a)))
+  (is (s= '(not a) (symbolicate-form '!!!a)))
   
   ;; https://www.satcompetition.org/2009/format-benchmarks2009.html
   ;; 0 is not allowed as a literal
   (signals error (symbolicate-form 0)))
 
+
+
 (test to-nnf
 
-  (is (equal (to-nnf
-              '(not (or a b c)))
-             '(and (not a) (not b) (not c))))
+  (is (s= (to-nnf
+           '(not (or a b c)))
+          '(and (not a) (not b) (not c))))
 
-  (is (equal (to-nnf
-              '(not (and a b c)))
-             '(or (not a) (not b) (not c)))))
+  (is (s= (to-nnf
+           '(not (and a b c)))
+          '(or (not a) (not b) (not c)))))
 
-(test to-cnf
+
+
+(test to-cnf-naive
   
-  (is (equal (to-cnf '(and a b c))
-             '(and (or a) (or b) (or c)))
-      "flatten")
+  (is (s= '(and a b c)
+          (to-cnf-naive '(and a b c))))
 
-  (is (equal (to-cnf '(or a b c))
-             '(and (or a b c)))
-      "flatten")
+  (is (s= '(or a b c)
+          (to-cnf-naive '(or a b c))))
 
-  (is (equal (to-cnf
-              '(and (or a !b c) d))
-             '(and
-               (or a (not b) c)
-               (or d)))
-      "negate")
+  (is (s= '(and (or a (not b) c) d)
+          (to-cnf-naive
+           (to-nnf
+            (symbolicate-form
+             '(and (or a !b c) d))))))
 
-  (is (equal (to-cnf 'a) '(and (or a)))
-      "negate")
-  (is (equal (to-cnf '!a) '(and (or (not a))))
-      "negate")
-  (is (equal (to-cnf '!!a) '(and (or a)))
-      "negate")
-  (is (equal (to-cnf '!!!a) '(and (or (not a))))
-      "negate")
+  (is (s= 'a (to-cnf-naive '(and (and (and a))))))
 
 
-  (is (equal (to-cnf '(and (and (and a))))
-             '(and (or a)))
-      "flatten")
+  (is (s= '(or (not a) (not b))
+          (to-cnf-naive
+           (to-nnf '(not (and a b))))))
 
+  (is (s= '(and (not a) (not b))
+          (to-cnf-naive
+           (to-nnf '(not (or a b))))))
 
-  (is (equal (to-cnf '(not (and a b)))
-             '(and
-               (or (not a) (not b))))
-      "dnf")
+  (is (s= '(and (not a) (not b))
+          (to-cnf-naive
+           (to-nnf '(not (or a b))))))
 
-  (is (equal (to-cnf '(not (or a b)))
-             '(and
-               (or (not a))
-               (or (not b))))
-      "dnf"))
+  (is (s= '(and (not a) (not b))
+          (to-cnf-naive
+           (to-nnf '(not (or a b))))))
+
+  (is (s= '(and p (or q a r) (or q b r) s)
+          (to-cnf-naive
+           '(and p (or q (and a b) r) s))))
+
+  (is (s= '(and (or a c) (or b c))
+          (to-cnf-naive
+           '(or (and a b) c))))
+
+  (is (s= '(and (or a c) (or b c) (or a d) (or b d))
+          (to-cnf-naive
+           '(or (and a b) (and c d)))))
+
+  (is (s= '(and
+            (or a c e) (or b c e) (or a d e) (or b d e)
+            (or a c f) (or b c f) (or a d f) (or b d f))
+          (to-cnf-naive
+           '(or (and a b) (and c d) (and e f)))))
+
+  (is (s= '(and
+             (or a c) (or a d) (or b c) (or b d)
+             (or e g) (or e h) (or f g) (or f h))
+          (to-cnf-naive
+           '(and
+             (or (and a b) (and c d))
+             (or (and e f) (and g h))))))
+  )
 
 
 (test instantiate
