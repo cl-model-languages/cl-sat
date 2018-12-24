@@ -126,6 +126,38 @@
              (or (and e f) (and g h))))))
   )
 
+(test to-cnf-tseytin
+  (is (s= '(AND
+            (OR CL-SAT.AUX-VARIABLES::AUX0 (NOT CL-SAT.AUX-VARIABLES::AUX1))
+            (OR CL-SAT.AUX-VARIABLES::AUX0 (NOT CL-SAT.AUX-VARIABLES::AUX2))
+            (OR CL-SAT.AUX-VARIABLES::AUX0 (NOT CL-SAT.AUX-VARIABLES::AUX3))
+            (OR CL-SAT.AUX-VARIABLES::AUX0 (NOT CL-SAT.AUX-VARIABLES::AUX4))
+            (OR CL-SAT.AUX-VARIABLES::AUX0 (NOT CL-SAT.AUX-VARIABLES::AUX5))
+            (OR
+             (NOT CL-SAT.AUX-VARIABLES::AUX0)
+             CL-SAT.AUX-VARIABLES::AUX1
+             CL-SAT.AUX-VARIABLES::AUX2
+             CL-SAT.AUX-VARIABLES::AUX3
+             CL-SAT.AUX-VARIABLES::AUX4
+             CL-SAT.AUX-VARIABLES::AUX5)
+            (OR CL-SAT.AUX-VARIABLES::AUX5 (NOT I) (NOT J))
+            (OR (NOT CL-SAT.AUX-VARIABLES::AUX5) I)
+            (OR (NOT CL-SAT.AUX-VARIABLES::AUX5) J)
+            (OR CL-SAT.AUX-VARIABLES::AUX4 (NOT G) (NOT H))
+            (OR (NOT CL-SAT.AUX-VARIABLES::AUX4) G)
+            (OR (NOT CL-SAT.AUX-VARIABLES::AUX4) H)
+            (OR CL-SAT.AUX-VARIABLES::AUX3 (NOT E) (NOT F))
+            (OR (NOT CL-SAT.AUX-VARIABLES::AUX3) E)
+            (OR (NOT CL-SAT.AUX-VARIABLES::AUX3) F)
+            (OR CL-SAT.AUX-VARIABLES::AUX2 (NOT C) (NOT D))
+            (OR (NOT CL-SAT.AUX-VARIABLES::AUX2) C)
+            (OR (NOT CL-SAT.AUX-VARIABLES::AUX2) D)
+            (OR CL-SAT.AUX-VARIABLES::AUX1 (NOT A) (NOT B))
+            (OR (NOT CL-SAT.AUX-VARIABLES::AUX1) A)
+            (OR (NOT CL-SAT.AUX-VARIABLES::AUX1) B))
+          (to-cnf-tseytin
+           ;; if you do this with the naive method, it becomes a pageful of conjunctions
+           '(or (and a b) (and c d) (and e f) (and g h) (and i j))))))
 
 (test instantiate
   (finishes (make-instance 'sat-instance :form '(and a b c)))
