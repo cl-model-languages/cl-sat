@@ -48,44 +48,44 @@
               '(not (and a b c)))
              '(or (not a) (not b) (not c)))))
 
-(test form-cnf
+(test to-cnf
   
-  (is (equal (form-cnf '(and a b c))
+  (is (equal (to-cnf '(and a b c))
              '(and (or a) (or b) (or c)))
       "flatten")
 
-  (is (equal (form-cnf '(or a b c))
+  (is (equal (to-cnf '(or a b c))
              '(and (or a b c)))
       "flatten")
 
-  (is (equal (form-cnf
+  (is (equal (to-cnf
               '(and (or a !b c) d))
              '(and
                (or a (not b) c)
                (or d)))
       "negate")
 
-  (is (equal (form-cnf 'a) '(and (or a)))
+  (is (equal (to-cnf 'a) '(and (or a)))
       "negate")
-  (is (equal (form-cnf '!a) '(and (or (not a))))
+  (is (equal (to-cnf '!a) '(and (or (not a))))
       "negate")
-  (is (equal (form-cnf '!!a) '(and (or a)))
+  (is (equal (to-cnf '!!a) '(and (or a)))
       "negate")
-  (is (equal (form-cnf '!!!a) '(and (or (not a))))
+  (is (equal (to-cnf '!!!a) '(and (or (not a))))
       "negate")
 
 
-  (is (equal (form-cnf '(and (and (and a))))
+  (is (equal (to-cnf '(and (and (and a))))
              '(and (or a)))
       "flatten")
 
 
-  (is (equal (form-cnf '(not (and a b)))
+  (is (equal (to-cnf '(not (and a b)))
              '(and
                (or (not a) (not b))))
       "dnf")
 
-  (is (equal (form-cnf '(not (or a b)))
+  (is (equal (to-cnf '(not (or a b)))
              '(and
                (or (not a))
                (or (not b))))

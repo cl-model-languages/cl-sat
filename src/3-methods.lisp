@@ -7,7 +7,7 @@
      (error "incompatible keywords: :form and :cnf specified at the same time"))
     (form
      (remf args :form)
-     (apply #'call-next-method i :cnf (form-cnf form) args))
+     (apply #'call-next-method i :cnf (to-cnf form) args))
     (t
      (call-next-method))))
 

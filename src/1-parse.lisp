@@ -101,18 +101,18 @@ only at the leaf nodes."
     ((list 'not (symbol)) nil)
     ((list 'not (list* _)) t)))
 
-(defun %form->cnf (form)
+(defun %to-cnf (form)
   ;; (and (or ...) (or ...))
   (match form
     ((list* 'and rest)
-     `(and ,@(mapcar #'%form->cnf rest)))
+     `(and ,@(mapcar #'%to-cnf rest)))
     ((list* 'or rest)
      (assert (notany (lambda-match ((list* 'and _) t) ((list* 'or _) t)) rest))
      form)
     ((list 'not (list* 'or rest))
-     `(and ,@(mapcar (compose #'%form->cnf #'negate) rest)))
+     `(and ,@(mapcar (compose #'%to-cnf #'negate) rest)))
     ((list 'not (list* 'and rest))
-     (%form->cnf
+     (%to-cnf
       `(or ,@(mapcar #'negate rest))))
     (_
      form)))
@@ -130,7 +130,7 @@ only at the leaf nodes."
       (rec form)
       `(and ,@(nreverse acc)))))
 
-(defun form-cnf (form)
+(defun to-cnf (form)
   (flatten-cnf
-   (%form->cnf
+   (%to-cnf
     (symbolicate-form form))))

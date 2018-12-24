@@ -10,7 +10,7 @@
   (:export
    #:solve
    #:sat-instance
-   #:form-cnf
+   #:to-cnf
    #:print-cnf
    #:with-temp
    #:*instance*
