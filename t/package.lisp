@@ -128,6 +128,7 @@
 
 (test to-cnf-tseytin
   (is (s= '(AND
+            CL-SAT.AUX-VARIABLES::AUX0
             (OR CL-SAT.AUX-VARIABLES::AUX0 (NOT CL-SAT.AUX-VARIABLES::AUX1))
             (OR CL-SAT.AUX-VARIABLES::AUX0 (NOT CL-SAT.AUX-VARIABLES::AUX2))
             (OR CL-SAT.AUX-VARIABLES::AUX0 (NOT CL-SAT.AUX-VARIABLES::AUX3))
@@ -174,7 +175,8 @@
   (finishes (print-cnf (make-instance 'sat-instance :form '(and (or a !b c) d))))
   (finishes (print-cnf (make-instance 'sat-instance :form '(and (and (and a))))))
   (finishes (print-cnf (make-instance 'sat-instance :form '(not (and a b)))))
-  (finishes (print-cnf (make-instance 'sat-instance :form '(not (or a b))))))
+  (finishes (print-cnf (make-instance 'sat-instance :form '(not (or a b)))))
+  (finishes (print-cnf (make-instance 'sat-instance :form '(and a !a)))))
 
 
 

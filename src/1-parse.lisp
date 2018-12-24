@@ -201,7 +201,7 @@ G.S. Tseytin: On the complexity of derivation in propositional calculus. Present
                  (_
                   ;; return literals as it is
                   form))))
-      (rec form))
+      (push (rec form) conjunctions))
     (to-cnf-naive (to-nnf `(and ,@conjunctions)))))
 
 
