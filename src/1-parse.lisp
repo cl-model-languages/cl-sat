@@ -94,7 +94,74 @@ only at the leaf nodes."
      form)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; CNF
+;; Naive CNF
+
+(defun dispatch (form top k)
+  (ematch* (form top)
+    (((list 'and first) _)
+     (dispatch first top k))
+
+    (((list* 'and body) t)
+     ;; if top=t, we are in a toplevel AND, which is allowed in CNF.
+     ;; Continuations are cut and evaluated immediately.
+     ;;
+     ;; note: each dispatch for AND returns a list which lacks AND as the first element.
+     (funcall k `(and ,@(mappend (lambda (e)
+                                   (match (dispatch e t #'identity)
+                                     ((list* 'and rest) rest)
+                                     (it                (list it))))
+                                 body))))
+    
+    (((list* 'and first body) nil)
+     ;; Otherwise, we are inside ORs -- now we are at X of (and P (or Q X=(and a b c) R ) S ).
+     ;; we must turn this inside-out, i.e.:
+     ;; (and P (or Q X=a R ) (or Q X=b R ) (or Q X=c R ) S ).
+     ;; We call the continuation k to obtain the substitutions.
+     ;; continuation k is a function that returns a form (or Q X R ) given X, thus we call it with each element.
+     (dispatch first t
+               (lambda (result1)
+                 (match* ((funcall k result1) (dispatch `(and ,@body) nil k))
+                   ;; merge ORs while removing redundancy
+                   (((list* 'and result1) (list* 'and result2))
+                    `(and ,@result1 ,@result2))
+                   ((it (list* 'and result2))
+                    `(and ,it ,@result2))
+                   (((list* 'and result1) it)
+                    `(and ,@result1 ,it))
+                   ((it1 it2)
+                    `(and ,it1 ,it2))))))
+    
+    (((list  'or first)  _)                  ; == first
+     (dispatch first top k))
+
+    (((list* 'or first body) _)
+     (dispatch first nil
+               (lambda (result1)
+                 ;; (format *trace-output* "~& entered the 1st OR callback: ~a ~%" result1)
+                 (dispatch `(or ,@body) nil
+                           (lambda (result2)
+                             ;; (format *trace-output* "~& entered the 2nd OR callback: ~a ~%" result2)
+                             (funcall k
+                                      (match* (result1 result2)
+                                        ;; merge ORs while removing redundancy
+                                        (((list* 'or result1) (list* 'or result2))
+                                         `(or ,@result1 ,@result2))
+                                        ((it (list* 'or result2))
+                                         `(or ,it ,@result2))
+                                        (((list* 'or result1) it)
+                                         `(or ,@result1 ,it))
+                                        ((it1 it2)
+                                         `(or ,it1 ,it2)))))))))
+    (((list 'not _) _)
+     (funcall k form))
+    (((symbol) _)
+     (funcall k form))))
+
+(defun to-cnf-naive (form)
+  "Convert a NNF into a flattened CNF via a naive method."
+  (dispatch form t #'identity))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun composite-negate-p (form)
   "Returns true if a form is a negation of a tree."
