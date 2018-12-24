@@ -9,6 +9,11 @@ Currently there are two implementations. Consult the following:
 + https://github.com/guicho271828/cl-sat.minisat
 + https://github.com/guicho271828/cl-sat.glucose
 
+*NEWS*
+
++ 2018/12/24 :: Implemented Tseytin's transformation for the input logic formula.
+                The input S-exp can be an arbitrary logical formula that is not necessarily a CNF.
+
 ** Usage
    
 In order to load and run minisat2, run follows:
