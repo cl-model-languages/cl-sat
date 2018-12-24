@@ -45,6 +45,10 @@
       "negate")
 
   (signals error (form-cnf '(and !!!!!)))
+
+  ;; https://www.satcompetition.org/2009/format-benchmarks2009.html
+  ;; 0 is not allowed as a literal
+  (signals error (form-cnf 0))
   
   (is (equal (form-cnf '(and (and (and a))))
              '(and (or a)))
