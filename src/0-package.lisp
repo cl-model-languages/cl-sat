@@ -10,12 +10,15 @@
   (:export
    #:solve
    #:sat-instance
-   #:to-cnf
    #:print-cnf
    #:with-temp
    #:*instance*
    #:sat-instance-variables
-   #:to-nnf))
+   #:to-nnf
+   #:to-cnf
+   #:to-cnf-naive
+   #:to-cnf-tseytin
+   #:symbolicate-form))
 (in-package :cl-sat)
 
 
