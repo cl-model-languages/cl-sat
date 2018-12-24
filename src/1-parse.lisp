@@ -205,3 +205,7 @@ G.S. Tseytin: On the complexity of derivation in propositional calculus. Present
     (to-cnf-naive (to-nnf `(and ,@conjunctions)))))
 
 
+(defun to-cnf (form)
+  (to-cnf-tseytin
+   (to-nnf
+    (symbolicate-form form))))
