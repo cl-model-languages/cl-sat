@@ -14,13 +14,13 @@
 (defvar *instance*)
 
 
-(defmethod solve ((*instance* sat-instance) solver &rest args)
+(defmethod solve ((*instance* sat-instance) solver &rest args &key debug)
   (with-temp (tmp :template "cnf.XXXXXXX")
     (with-output-to-file (s tmp :if-exists :supersede)
       (print-cnf *instance* s))
     (apply #'solve (pathname tmp) solver args)))
 
-(defmethod solve ((i list) solver &rest args)
+(defmethod solve ((i list) solver &rest args &key debug)
   (apply #'solve
          (make-instance 'sat-instance :form i)
          solver
