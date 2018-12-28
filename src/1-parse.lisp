@@ -169,8 +169,6 @@ only at the leaf nodes."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Tseytin transformation
 
-(defvar *aux-var-index*)
-
 (defun to-cnf-tseytin (form)
   "Convert a NNF into a flattened CNF.
 OR branches containing ANDs that could result in an exponential CNF
@@ -182,11 +180,11 @@ aux-variables are generated in CL-SAT.AUX-VARIABLES package.
 G.S. Tseytin: On the complexity of derivation in propositional calculus. Presented at the Leningrad Seminar on Mathematical Logic held in September 1966.
 
 "
-  (let ((*aux-var-index* -1)
+  (let ((aux-var-index -1)
         (subformulas (make-hash-table :test 'equal))
         conjunctions)
     ;; collect subformulas
-    (labels ((aux+ () (aux (incf *aux-var-index*)))
+    (labels ((aux+ () (aux (incf aux-var-index)))
              (rec (form)
                (match form
                  ((list (or 'and 'or) single)
