@@ -163,11 +163,13 @@ exec ros -Q -- $0 "$@"
    (remove-duplicates (flatten plaid::*sat-expression*))
    '(or and not))))
 
+(defparameter *sat-expression-cnf* (time (cl-sat:to-cnf plaid::*sat-expression*)))
+
 (print :original+aux-variables)
 (print
  (length
   (set-difference
-   (remove-duplicates (flatten (cl-sat:to-cnf plaid::*sat-expression*)))
+   (remove-duplicates (flatten *sat-expression-cnf*))
    '(or and not))))
 
 #+(or)
