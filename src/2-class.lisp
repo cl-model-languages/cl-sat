@@ -1,7 +1,8 @@
 (in-package :cl-sat)
 
 (defclass sat-instance ()
-  ((cnf :reader cnf :initarg :cnf)))
+  ((cnf :reader cnf :initarg :cnf)
+   (%variables)))
 
 (defgeneric solve (input solver-designator &rest args))
 
@@ -33,7 +34,12 @@
 
 
 (defun sat-instance-variables (instance)
-  (remove-duplicates
-   (set-difference
-    (flatten (cnf instance))
-    '(and or not))))
+  (with-slots (%variables) instance
+    (if (slot-boundp instance '%variables)
+        %variables
+        (setf %variables
+              (remove-duplicates
+               (set-difference
+                (flatten (cnf instance))
+                '(and or not)))))))
+
