@@ -6,14 +6,14 @@
 
 (defgeneric solve (input solver-designator &rest args))
 
-(defmethod initialize-instance ((i sat-instance) &rest args &key form cnf &allow-other-keys)
+(defmethod initialize-instance ((i sat-instance) &rest args &key form cnf (converter #'to-cnf-tseytin) &allow-other-keys)
   (assert (not (and form cnf)) nil )
   (cond
     ((and form cnf)
      (error "incompatible keywords: :form and :cnf specified at the same time"))
     (form
      (remf args :form)
-     (apply #'call-next-method i :cnf (to-cnf form) args))
+     (apply #'call-next-method i :cnf (to-cnf form converter) args))
     (t
      (call-next-method))))
 
@@ -25,9 +25,9 @@
       (print-cnf *instance* s))
     (apply #'solve (pathname tmp) solver args)))
 
-(defmethod solve ((i list) solver &rest args &key debug)
+(defmethod solve ((i list) solver &rest args &key (converter #'to-cnf-tseytin) &allow-other-keys)
   (apply #'solve
-         (make-instance 'sat-instance :form i)
+         (make-instance 'sat-instance :form i :converter converter)
          solver
          args))
 
