@@ -156,14 +156,14 @@ exec ros -Q -- $0 "$@"
 (defparameter *sat-expression* 
   (syntax-tree-to-sat-expr))
 
+(defparameter *sat-expression-cnf* (time (cl-sat:to-cnf plaid::*sat-expression*)))
+
 (print :original-number-of-variables)
 (print
  (length
   (set-difference
    (remove-duplicates (flatten plaid::*sat-expression*))
    '(or and not))))
-
-(defparameter *sat-expression-cnf* (time (cl-sat:to-cnf plaid::*sat-expression*)))
 
 (print :original+aux-variables)
 (print
@@ -176,6 +176,7 @@ exec ros -Q -- $0 "$@"
 (print
  (length
   *sat-expression-cnf*))
+(finish-output)
 
 #+(or)
 (defparameter *cnf* (sat:to-cnf *sat-expression*))
