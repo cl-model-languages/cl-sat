@@ -7,13 +7,22 @@
 
 
 (defpackage :plaid
-  (:use :cl :iterate))
+  (:use :cl :iterate :alexandria))
 
 (in-package :plaid)
 
 ;; Get this file from
 ;; https://raw.githubusercontent.com/ctfs/write-ups-2015/master/plaidctf-2015/reversing/re-gex/regex_57f2cf49f6a354b4e8896c57a4e3c973.txt
-(defparameter *regex* (alexandria:read-file-into-string "regex_57f2cf49f6a354b4e8896c57a4e3c973.txt"))
+
+(defvar *path* (asdf:system-relative-pathname :cl-sat "t/regex_57f2cf49f6a354b4e8896c57a4e3c973.txt"))
+
+(unless (probe-file *path*)
+  (uiop:run-program
+   `("curl"
+     "https://raw.githubusercontent.com/ctfs/write-ups-2015/master/plaidctf-2015/reversing/re-gex/regex_57f2cf49f6a354b4e8896c57a4e3c973.txt")
+   :output (asdf:system-relative-pathname :cl-sat "t/regex_57f2cf49f6a354b4e8896c57a4e3c973.txt")))
+
+(defparameter *regex* (alexandria:read-file-into-string *path*))
 
 (defparameter *syntax-tree* (cl-ppcre:parse-string *regex*))
 
