@@ -93,6 +93,8 @@ only at the leaf nodes."
     ((list 'not (list* 'and rest))
      ;; De-Morgan's law
      `(or  ,@(mapcar (compose #'to-nnf #'negate) rest)))
+    ((list 'not (list 'not further))
+     (to-nnf further))
     ((list 'not (symbol))
      form)
     ((symbol)
