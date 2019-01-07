@@ -162,9 +162,9 @@ only at the leaf nodes."
     (((symbol) _)
      (funcall k form))))
 
-(defun to-cnf-naive (form)
+(defun to-cnf-naive (nnf)
   "Convert a NNF into a flattened CNF via a naive method."
-  (dispatch form t #'identity))
+  (dispatch nnf t #'identity))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Tseytin transformation
