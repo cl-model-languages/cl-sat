@@ -4,6 +4,7 @@
 exec ros -Q -- $0 "$@"
 |#
 
+(ql:register-local-projects)
 (ql:quickload :cl-ppcre)
 (ql:quickload :iterate)
 (ql:quickload :alexandria)
