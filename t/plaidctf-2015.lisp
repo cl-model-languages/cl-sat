@@ -172,6 +172,11 @@ exec ros -Q -- $0 "$@"
    (remove-duplicates (flatten *sat-expression-cnf*))
    '(or and not))))
 
+(print :cnf-clauses)
+(print
+ (length
+  *sat-expression-cnf*))
+
 #+(or)
 (defparameter *cnf* (sat:to-cnf *sat-expression*))
 
