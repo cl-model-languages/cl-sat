@@ -12,3 +12,14 @@ When DEBUG is non-nil, it does not remove the directory so that you can investig
        ,(if debug
             `(format t "~&not removing ~a for debugging" ,var)
             `(uiop:run-program (format nil "rm -rf ~a" (namestring ,var)) :ignore-error-status t)))))
+
+
+(defun parse-dmacs-output (file instance)
+  (let ((assignments (iter (for token in-file file)
+                           (collect token))))
+    (iter (for v in (sat-instance-variables instance))
+          (for a in assignments)
+          (when (and (plusp a)
+                     (not (eq (find-package :cl-sat.aux-variables)
+                              (symbol-package v))))
+            (collect v)))))

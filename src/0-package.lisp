@@ -19,7 +19,8 @@
    #:to-cnf-naive
    #:to-cnf-tseytin
    #:symbolicate-form
-   #:*verbosity*))
+   #:*verbosity*
+   #:parse-dmacs-output))
 (in-package :cl-sat)
 
 
