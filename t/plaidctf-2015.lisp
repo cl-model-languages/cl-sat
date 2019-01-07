@@ -181,4 +181,4 @@ exec ros -Q -- $0 "$@"
                                   :glucose))
 
 
-(time (sat:solve *sat-expression* :minisat))
+(time (sat:solve *sat-expression* :glucose))
