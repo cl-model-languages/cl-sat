@@ -189,5 +189,8 @@ exec ros -Q -- $0 "$@"
 (defparameter *result* (sat:solve *sat-expression*
                                   :glucose))
 
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (time (print (sat:solve *sat-expression* :glucose))))
 
-(time (sat:solve *sat-expression* :glucose))
+
