@@ -149,6 +149,19 @@
 (defparameter *sat-expression* 
   (syntax-tree-to-sat-expr))
 
+(print :original-number-of-variables)
+(print
+ (length
+  (set-difference
+   (remove-duplicates (flatten plaid::*sat-expression*))
+   '(or and not))))
+
+(print :original+aux-variables)
+(print
+ (length
+  (set-difference
+   (remove-duplicates (flatten (cl-sat:to-cnf plaid::*sat-expression*)))
+   '(or and not))))
 
 #+(or)
 (defparameter *cnf* (sat:to-cnf *sat-expression*))
