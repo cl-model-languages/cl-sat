@@ -13,7 +13,6 @@
               (:file "src/1-parse")
               (:file "src/1-util")
               (:file "src/2-class")
-              (:file "src/3-methods")
               (:file "src/3-print"))
  :description "Common Lisp API to Boolean SAT Solvers"
  :in-order-to ((test-op (test-op :cl-sat.test))))
