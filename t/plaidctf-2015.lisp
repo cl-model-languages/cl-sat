@@ -1,3 +1,9 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#|
+exec ros -Q -- $0 "$@"
+|#
+
 (ql:quickload :cl-ppcre)
 (ql:quickload :iterate)
 (ql:quickload :alexandria)
