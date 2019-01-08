@@ -37,8 +37,10 @@
     (if (slot-boundp instance '%variables)
         %variables
         (setf %variables
-              (remove-duplicates
-               (set-difference
-                (flatten (cnf instance))
-                '(and or not)))))))
+              (coerce
+               (remove-duplicates
+                (set-difference
+                 (flatten (cnf instance))
+                 '(and or not)))
+               'simple-vector)))))
 
