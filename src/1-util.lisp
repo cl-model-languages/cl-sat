@@ -9,9 +9,9 @@ When DEBUG is non-nil, it does not remove the directory so that you can investig
                                  :output '(:string :stripped t))))
      (unwind-protect
          (progn ,@body)
-       ,(if debug
-            `(format t "~&not removing ~a for debugging" ,var)
-            `(uiop:run-program (format nil "rm -rf ~a" (namestring ,var)) :ignore-error-status t)))))
+       (if ,debug
+           (format t "~&not removing ~a for debugging" ,var)
+           (uiop:run-program (format nil "rm -rf ~a" (namestring ,var)) :ignore-error-status t)))))
 
 
 (defun parse-dmacs-output (file instance)
