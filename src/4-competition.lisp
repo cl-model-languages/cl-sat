@@ -22,6 +22,8 @@
 (define-condition download-error (competition-setup-error) ())
 (define-condition unzip-error (competition-setup-error) ())
 (define-condition build-error (competition-setup-error) ())
+(define-condition chmod-error (competition-setup-error) ())
+
 (defun download-solver (year track name)
   (check-type year fixnum)
   (let* ((dir (namestring (asdf:system-relative-pathname :cl-sat (format nil "solvers/~a/~a/" year track))))
@@ -44,7 +46,7 @@
               (uiop:subprocess-error ()
                 (error 'unzip-error :year year :track track :name name))) 
             (handler-case
-                (uiop:run-program `("sh" "-c" ,(format nil "cd ~a; bash starexec_build" home))
+                (uiop:run-program `("sh" "-c" ,(format nil "cd ~a; chmod +x starexec_build; ./starexec_build" home))
                                   :output t :error t)
               (uiop:subprocess-error ()
                 (error 'build-error :year year :track track :name name))))
@@ -54,6 +56,11 @@
                            :output t :error t :ignore-error-status t))))
     (unless (probe-file runner)
       (error "Runner script ~a is missing in ~a !" runner bin))
+    (handler-case
+        (uiop:run-program `("sh" "-c" ,(format nil "chmod +x ~a/*" bin))
+                          :output t :error-output t)
+      (uiop:subprocess-error ()
+        (error 'chmod-error :year year :track track :name name)))
     (values runner bin)))
 
 (defmethod solve ((input pathname) (competition (eql :competition)) &rest options &key debug year track name &allow-other-keys)
