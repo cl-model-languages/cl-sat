@@ -32,7 +32,7 @@
          (bin (namestring (merge-pathnames (format nil "~a/bin/" name) dir)))
          (home (namestring (merge-pathnames (format nil "~a/" name) dir))))
     (ensure-directories-exist zip)
-    (unless (probe-file zip)
+    (unless (probe-file runner)
       (alexandria:unwind-protect-case ()
           (progn
             (handler-case
