@@ -9,7 +9,7 @@
                 :year year :track track :name name))
 
 
-(defvar *configs*
+(defparameter *configs*
   '((2016 "agile" "CHBR_glucose_agile")
     (2016 "agile" "CHBR_glucose_tuned_agile")
     (2016 "agile" "COMiniSatPSChandrasekharnoDRUP")
@@ -21,7 +21,7 @@
     (2016 "agile" "MapleCOMSPS_LRB_no_DRUP")
     (2016 "agile" "MapleCOMSPS_no_DRUP")
     (2016 "agile" "MapleGlucose")
-    (2016 "agile" "Riss6")
+    ;; (2016 "agile" "Riss6")
     (2016 "agile" "Splatz06vnotrace")
     (2016 "agile" "YalSAT03r")
     (2016 "agile" "abcdSAT_drup")
@@ -46,7 +46,7 @@
     (2016 "main" "MapleCOMSPS_DRUP")
     (2016 "main" "MapleCOMSPS_LRB_DRUP")
     (2016 "main" "MapleGlucose")
-    (2016 "main" "Riss6")
+    ;; (2016 "main" "Riss6")
     (2016 "main" "Scavel_SAT")
     (2016 "main" "Splatz06vmain")
     (2016 "main" "YalSAT03r")
@@ -87,8 +87,9 @@
     (2016 "random" "stocBCD")
     
 
-    (2017 "agile" "Candy")
-    (2017 "agile" "Riss7")
+    ;; zip is too large; dont want to test
+    ;; (2017 "agile" "Candy")
+    ;; (2017 "agile" "Riss7")
     (2017 "agile" "abcdsat_a17")
     (2017 "agile" "abcdsat_r17")
     (2017 "agile" "bs_glucose")
@@ -107,10 +108,11 @@
     ;; (2017 "incremental" "glucose-ipasir")
     ;; (2017 "incremental" "riss_7-ipasir.tar.gz")
     (2017 "main" "COMiniSatPS_Pulsar_drup")
-    (2017 "main" "Candy")
-    (2017 "main" "CandyRSILi")
-    (2017 "main" "CandyRSILv")
-    (2017 "main" "CandySL21")
+    ;; zip is too large; dont want to test
+    ;; (2017 "main" "Candy")
+    ;; (2017 "main" "CandyRSILi")
+    ;; (2017 "main" "CandyRSILv")
+    ;; (2017 "main" "CandySL21")
     (2017 "main" "GHackCOMSPS_drup")
     (2017 "main" "MapleCOMSPS_CHB_VSIDS_drup")
     (2017 "main" "MapleCOMSPS_LRB_VSIDS_2_drup")
@@ -119,7 +121,7 @@
     (2017 "main" "MapleLRB_LCMoccRestart")
     (2017 "main" "Maple_LCM")
     (2017 "main" "Maple_LCM_Dist")
-    (2017 "main" "Riss7")
+    ;; (2017 "main" "Riss7")
     (2017 "main" "abcdsat_r17")
     (2017 "main" "bs_glucose")
     (2017 "main" "cadical-sc17-agile-proof")
@@ -181,8 +183,8 @@
     (2018 "main_and_glucose_hack" "Maple_LCM_Scavel")
     (2018 "main_and_glucose_hack" "Maple_LCM_Scavel_200")
     (2018 "main_and_glucose_hack" "Minisat-v2.2.0-106-ge2dd095")
-    (2018 "main_and_glucose_hack" "Riss7.1")
-    (2018 "main_and_glucose_hack" "Sparrow2Riss-2018")
+    ;; (2018 "main_and_glucose_hack" "Riss7.1")
+    ;; (2018 "main_and_glucose_hack" "Sparrow2Riss-2018")
     (2018 "main_and_glucose_hack" "YalSAT")
     (2018 "main_and_glucose_hack" "abcdsat_r18")
     (2018 "main_and_glucose_hack" "cms55-main-all4fixed")
@@ -204,14 +206,15 @@
 
     (2018 "random" "CPSparrow")
     (2018 "random" "ReasonLS")
-    (2018 "random" "Sparrow2Riss-2018")
+    ;; (2018 "random" "Sparrow2Riss-2018")
     (2018 "random" "YalSAT")
     (2018 "random" "dimetheus")
     (2018 "random" "expGlucoseSilent")
     (2018 "random" "gluHack")
     (2018 "random" "glucose-3.0_PADC_3_NoDRUP")
     (2018 "random" "glucose-3.0_PADC_10_NoDRUP")
-    (2018 "random" "lawa")
+    ;; it does not finish
+    ;; (2018 "random" "lawa")
     (2018 "random" "probSAT")))
 
     
