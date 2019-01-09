@@ -46,7 +46,7 @@
               (uiop:subprocess-error ()
                 (error 'unzip-error :year year :track track :name name))) 
             (handler-case
-                (uiop:run-program `("sh" "-c" ,(format nil "cd ~a; chmod +x starexec_build build/*; ./starexec_build" home))
+                (uiop:run-program `("sh" "-c" ,(format nil "cd ~a; chmod +x starexec_build build/*; MAKEFLAGS=\"-j 4\" ./starexec_build" home))
                                   :output t :error t)
               (uiop:subprocess-error ()
                 (error 'build-error :year year :track track :name name))))
