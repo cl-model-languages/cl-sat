@@ -13,6 +13,17 @@ Currently there are two implementations. Consult the following:
 
 + 2018/12/24 :: Implemented Tseytin's transformation for the input logic formula.
                 The input S-exp can be an arbitrary logical formula that is not necessarily a CNF.
++ 2019/1/8 :: Implemented a =:COMPETITION= keyword for the generic function
+              =SOLVE=, which accepts =:year=, =:track=, =:name= argument
+              specifying the solver that particupated in SAT Competition 2016,2017,2018.
+              For example, you can run
+              =(solve :competition <form> :name "Lingeling" :track "main_and_glucose_hack" :year 2018)=
+              to obtain the Lingeling that participated in SAT Competition 2018.
+              The list of available solvers are:
+  + 2016: https://baldur.iti.kit.edu/sat-competition-2016/solvers/
+  + 2017: https://baldur.iti.kit.edu/sat-competition-2017/solvers/
+  + 2017: http://sat2018.forsyte.tuwien.ac.at/solvers/
+  + [[./competition.org][Here is the list of solvers that worked.]]
 
 ** Usage
    
@@ -22,7 +33,21 @@ In order to load and run minisat2, run follows:
 :
 : (cl-sat:solve '(and (or a b) (or a !b c)) :minisat)
 : ->
-: (C A)
+: (C B)
+: T
+: T
+
+: (ql:quickload :cl-sat.glucose)
+:
+: (cl-sat:solve '(and (or a b) (or a !b c)) :glucose)
+: ->
+: (C B)
+: T
+: T
+
+: (cl-sat:solve '(and (or a b) (or a !b c)) :competition :year 2018 :track "main_and_glucose_hack" :name "Lingeling")
+: ->
+: (C B A)
 : T
 : T
 
@@ -37,15 +62,20 @@ boolean indicating whether the result is determined. For example,
 + =NIL,NIL,NIL= means the solver failed due to the timelimit etc. so the result was indeterminable.
 + =NIL,T,T= means that the problem is SAT by assigning all variables to false.
 + =NIL,NIL,T= means that the problem is UNSAT.
++ On some occasions, depending on the solver, it also returns the fourth value,
+  which is a list of variables that don't matter: it can be either true
+  or false.
 
 ** S-exp -> CNF converter
 
-The input list is interpreted as a CNF formula.
-=AND= and =OR= are sometimes implied.
-Negated/false atoms are specified by =NOT=.
+The input list can be an arbitrary propositional formula containing =or=, =and=, =not=.
+=AND= and =OR= are sometimes implied (e.g. a single atom without any conjunction/disjunction). 
+Negated/false atoms are specified by =(not <atom>)=.
 
 Each term can be specified by a symbol or a number, but do not mix two styles (it may contain bugs).
 Symbols with =!= prefix and negative numbers are treated as false atoms.
+
+These are internally converted into a NNF via De Morgan's law and then to a CNF via Tseytin transformation.
 
 Examples:
 
@@ -59,6 +89,8 @@ a ;; -> equivalent to (and (or a))
 (and 1 !b c) ;; -> undefined
 
 (and a (or !b c)) ;; equivalent to (and (or a) (or (not b) c))
+
+(or (and a b) (and b c)) ; -> (and (or aux1 aux2) (or (not aux1) a) (or aux1 (not a) (not b)) ...)
 #+END_SRC
 
 ** Dependencies
@@ -79,11 +111,6 @@ Also, it depends on the following libraries:
 
 + iterate by  ::
     Jonathan Amsterdam's iterator/gatherer/accumulator facility
-
-
-
-** Installation
-
 
 ** Author
 
