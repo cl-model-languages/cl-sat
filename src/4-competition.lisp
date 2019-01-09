@@ -6,6 +6,22 @@
     (2017 . "https://baldur.iti.kit.edu/sat-competition-2017/solvers/")
     (2018 . "http://sat2018.forsyte.tuwien.ac.at/solvers/")))
 
+(define-condition competition-setup-error (error)
+  ((year :initarg :year)
+   (track :initarg :track)
+   (name :initarg :name))
+  (:report
+   (lambda (c s)
+     (print c s))))
+
+(defmethod print-object ((c competition-setup-error) s)
+  (print-unreadable-object (c s :type t)
+    (with-slots (year track name) c
+       (format s "~a ~a ~a" year track name))))
+
+(define-condition download-error (competition-setup-error) ())
+(define-condition unzip-error (competition-setup-error) ())
+(define-condition build-error (competition-setup-error) ())
 (defun download-solver (year track name)
   (check-type year fixnum)
   (let* ((dir (namestring (asdf:system-relative-pathname :cl-sat (format nil "solvers/~a/~a/" year track))))
@@ -17,12 +33,21 @@
     (unless (probe-file zip)
       (alexandria:unwind-protect-case ()
           (progn
-            (uiop:run-program `("wget" ,(format nil "~a/~a/~a.zip" (cdr (assoc year *base-url*)) track name) "-O" ,zip)
-                              :output t :error t)
-            (uiop:run-program `("sh" "-c" ,(format nil "cd ~a; unzip ~a.zip" dir name))
-                              :output t :error t)
-            (uiop:run-program `("sh" "-c" ,(format nil "cd ~a; bash starexec_build" home))
-                              :output t :error t))
+            (handler-case
+                (uiop:run-program `("wget" ,(format nil "~a/~a/~a.zip" (cdr (assoc year *base-url*)) track name) "-O" ,zip)
+                                  :output t :error t)
+              (uiop:subprocess-error ()
+                (error 'download-error :year year :track track :name name)))
+            (handler-case
+                (uiop:run-program `("sh" "-c" ,(format nil "cd ~a; unzip ~a.zip" dir name))
+                                  :output t :error t)
+              (uiop:subprocess-error ()
+                (error 'unzip-error :year year :track track :name name))) 
+            (handler-case
+                (uiop:run-program `("sh" "-c" ,(format nil "cd ~a; bash starexec_build" home))
+                                  :output t :error t)
+              (uiop:subprocess-error ()
+                (error 'build-error :year year :track track :name name))))
         (:abort
          (format *error-output* "~&Aborting, cleaning up~%")
          (uiop:run-program `("rm" "-rv" ,zip ,home)
