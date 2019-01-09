@@ -51,11 +51,18 @@
 ;; https://www.satcompetition.org/2004/format-solvers2004.html
 
 (defun parse-dimacs-output (file instance)
+  (handler-case
+      (parse-true-dimacs-output file instance)
+    (match-error ()
+      (format *error-output* "~&Non-conforming output format! Assuming it is a list of variables...~%")
+      (handler-case
+          (parse-assignments file instance)
+        (type-error ()
+          (format *error-output* "~&Not a list of assignments! Trying to ignore SAT or non-numbers...~%")
+          (parse-assignments-ignoring-symbols file instance))))))
+
+(defun parse-true-dimacs-output (file instance)
   (iter (for line in-file file using #'read-line)
-        (for tokens =
-             (with-input-from-string (s line)
-               (iter (for token in-stream s)
-                     (collect token))))
 
         (with sure = nil)
         (with satisfiable = nil)
@@ -63,42 +70,58 @@
                                         :element-type '(integer 0 2)
                                         :initial-element 2))
 
-        (ematch tokens
-          ((list* 'c _)
+        ;; hack for common bugs in glucose-based solvers
+        (when (equal line "WARNING: for repeatability, setting FPU to use double precision")
+          (next-iteration))
+
+        (ematch line
+          ((string* #\c _)
            ;; do nothing
            )
-          ((list* 'v variables)
-           (iter (for v in variables)
-                 (setf (aref assignments (1- (abs v)))
-                       (if (plusp v) 0 1))))
-          ((list 's 'satisfiable)
+          ((string* #\v _)
+           (with-input-from-string (s (subseq line 2))
+             (iter (for v in-stream s)
+                   (until (zerop v))
+                   (setf (aref assignments (1- (abs v)))
+                         (if (plusp v) 1 0)))))
+          ("s SATISFIABLE"
            (setf sure t satisfiable t))
-          ((list 's 'unsatisfiable)
+          ("s UNSATISFIABLE"
            (setf sure t satisfiable nil))
-          ((list 's 'unknown)
-           (setf sure nil satisfiable nil))
-          (_
-           (format *error-output* "~&Non-conforming output format! Assuming it is a list of variables...~%")
-           (return-from parse-dimacs-output
-             (parse-nonconforming-output
-              file instance))))
+          ("s UNKNOWN"
+           (setf sure nil satisfiable nil)))
 
         (finally
          (iter (for a in-vector assignments with-index i)
-               (for v = (aref (sat-instance-variables instance) (1- i)))
+               (for v = (aref (sat-instance-variables instance) i))
                (case a
-                 (0 (when (not (eq (find-package :cl-sat.aux-variables)
+                 (1 (when (not (eq (find-package :cl-sat.aux-variables)
                                    (symbol-package v)))
                       (collect v into trues)))
                  (2 (when (not (eq (find-package :cl-sat.aux-variables)
                                    (symbol-package v)))
                       (collect v into dont-care))))
                (finally
-                (return-from parse-dimacs-output
+                (return-from parse-true-dimacs-output
                   (values trues satisfiable sure dont-care)))))))
 
-(defun parse-nonconforming-output (file instance)
+(defun parse-assignments (file instance)
   (iter (for assignment in-file file)
+        (check-type assignment integer)
+        (with variables = (sat-instance-variables instance))
+        (when (plusp assignment)
+          (let ((variable (aref variables (1- assignment))))
+            (when (not (eq (find-package :cl-sat.aux-variables)
+                           (symbol-package variable)))
+              (collect variable into trues))))
+        (finally
+         (return
+           (values trues t t)))))
+
+(defun parse-assignments-ignoring-symbols (file instance)
+  (iter (for assignment in-file file)
+        (when (not (integerp assignment))
+          (next-iteration))
         (with variables = (sat-instance-variables instance))
         (when (plusp assignment)
           (let ((variable (aref variables (1- assignment))))
