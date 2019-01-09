@@ -21,7 +21,7 @@
        (pprint-logical-block (stream nil :per-line-prefix "c ")
          (when (<= 2 *verbosity*)
            (format stream "~&~a" cnf))
-         (iter (for i from 0)
+         (iter (for i from 1)
                (for v in-vector variables)
                (format stream "~&Variable ~a : ~a" i v))))
 
