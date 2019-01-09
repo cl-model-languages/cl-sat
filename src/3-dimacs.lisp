@@ -50,6 +50,41 @@
 
 ;; https://www.satcompetition.org/2004/format-solvers2004.html
 
+;; Output Format
+;; We ask for the solvers to DISPLAY messages on the standard output that will be used to check the results and to RETURN EXIT CODE to be handled by the SAT-Ex system. The output format is partly inspired by the previously defined DIMACS output specification and may be used to manually check some results.
+;; Messages
+;; There is no specific order in the solvers output lines. However, all line, according to its first char, must belong to one of the three following categories:
+;; 
+;;     comments (any information that authors want to emphasize, such like #backtracks, #flips,... or internal cpu-time), beginning with the two chars "c "
+;;     solution (satisfiable or not). Only one line of this type is allowed. This line must begin with the two chars " s " and must be one of the following ones:
+;;         s SATISFIABLE
+;;         s UNSATISFIABLE
+;;         s UNKNOWN
+;;     values of a solution (if any), beginning with the two chars "v " (to be precised in the following).
+;; 
+;; When a solver answers UNKNOWN, it is charged with the maximum allowed time SATTIMEOUT.
+;; 
+;; Technically, the two first chars are important and must be strictly respected: scripts will use traditional grep commands to parse results (and at least to partition standard output).
+;; 
+;; If the solver does not display a solution line (or if the solution line is not valid), then UNKNOWN will be assumed.
+;; Providing a model
+;; If the solver outputs SATISFIABLE, it should provide a model (or an implicant) of the instance that will be used to check the correctness of the answer. I.e., it must provide a 0-terminated sequence of distinct non-contradictory literals that makes every clause of the input formula true. It is NOT necessary to list the literals corresponding to all variables if a smaller amount of literals suffices. The order of the literals does not matter. Arbitrary white space characters, including ordinary white spaces, newline and tabulation characters, are allowed between the literals, as long as each line containing the literals is a values line, i.e. it begins with the two chars "v ".
+;; 
+;; If the solver cannot provide such a certificate for satisfiable instances, then the author(s) are asked to contact Laurent Simon directly; then the decision concerning the solver will be made (e.g., running the solver hors concours).
+;; 
+;; Note that we do not require a proof for unsatisfiability. The values lines should only appear with SATISFIABLE instance.
+;; 
+;; For instance, the following outputs are valid for the instances given in example:
+;; 
+;; mycomputer:~$ ./mysolver myinstance-sat
+;; c mysolver 6.55957 starting with SATTIMEOUT fixed to 1000s
+;; c Trying to guess a solution...
+;; s SATISFIABLE
+;; v -3 4
+;; v -6 18 21
+;; v 1 -7 0
+;; c Done (mycputime is 234s).
+
 (defun parse-dimacs-output (file instance)
   (handler-case
       (parse-true-dimacs-output file instance)
@@ -118,6 +153,10 @@
          (return
            (values trues t t)))))
 
+;; https://dwheeler.com/essays/minisat-user-guide.html
+;; SAT
+;; 1 2 -3 4 5 0
+
 (defun parse-assignments-ignoring-symbols (file instance)
   (iter (for assignment in-file file)
         (when (not (integerp assignment))
@@ -131,3 +170,6 @@
         (finally
          (return
            (values trues t t)))))
+
+
+;; todo: RUP proof in SAT competition 2009 https://www.satcompetition.org/2009/
