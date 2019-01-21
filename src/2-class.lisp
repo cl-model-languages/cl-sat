@@ -32,7 +32,7 @@
          args))
 
 
-(defun sat-instance-variables (instance)
+(defun variables (instance)
   (with-slots (%variables) instance
     (if (slot-boundp instance '%variables)
         %variables

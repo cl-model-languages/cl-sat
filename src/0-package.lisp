@@ -13,7 +13,7 @@
    #:print-cnf
    #:with-temp
    #:*instance*
-   #:sat-instance-variables
+   #:variables
    #:to-nnf
    #:to-cnf
    #:to-cnf-naive
