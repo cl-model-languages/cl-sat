@@ -126,24 +126,28 @@ only at the leaf nodes."
                                  body))))
     
     (((list* 'and first body) nil)
-     ;; Otherwise, we are inside ORs -- now we are at X of (and P (or Q X=(and a b c) R ) S ).
+     ;; Otherwise, we are inside ORs -- now we are at X of (and P (or Q X=(and A B C) R ) S ).
      ;; we must turn this inside-out, i.e.:
-     ;; (and P (or Q X=a R ) (or Q X=b R ) (or Q X=c R ) S ).
+     ;; (and P (or Q X=A R ) (or Q X=B R ) (or Q X=C R ) S ).
      ;; We call the continuation k to obtain the substitutions.
      ;; continuation k is a function that returns a form (or Q X R ) given X, thus we call it with each element.
      (dispatch first t
                (lambda (result1)
-                 (match* ((funcall k result1) (dispatch `(and ,@body) nil k))
-                   ;; merge ORs while removing redundancy
+                 (match* ((funcall k result1)             ; == process A --> (or Q A R)
+                          (dispatch `(and ,@body) nil k)) ; == process (and B C) --> (and (or Q B R) (or Q C R))
+                   ;; merge ANDs while removing redundancy
                    (((list* 'and result1) (list* 'and result2))
                     `(and ,@result1 ,@result2))
-                   ((it (list* 'and result2))
+                   ((it (list* 'and result2)) ; <-- above case ends up here
                     `(and ,it ,@result2))
                    (((list* 'and result1) it)
                     `(and ,@result1 ,it))
                    ((it1 it2)
                     `(and ,it1 ,it2))))))
     
+    ;; unsat
+    ;; (((list  'or)  _))
+
     (((list  'or first)  _)                  ; == first
      (dispatch first top k))
 
