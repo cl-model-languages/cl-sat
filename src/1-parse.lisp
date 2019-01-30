@@ -31,13 +31,14 @@ We next convert it into an NNF, and finally convert it into a CNF.
 (defpackage cl-sat.variables)
 (defpackage cl-sat.aux-variables)
 
-(defun var (number)
-  "intern a number to a symbol"
-  (intern (format nil "VAR~a" number) :cl-sat.variables))
+(defun var (suffix &optional (prefix "V"))
+  "Helper function: Interns SUFFIX (usually a number, but can be any printable object) to a symbol with the optional PREFIX.
+The new symbol is interned in package CL-SAT.VARIABLES."
+  (intern (format nil "~a~a" prefix suffix) :cl-sat.variables))
 
-(defun aux (number)
-  "intern a number to an auxiliary symbol"
-  (intern (format nil "AUX~a" number) :cl-sat.aux-variables))
+(defun aux (suffix &optional (prefix "A"))
+  "intern a suffix to an auxiliary symbol"
+  (intern (format nil "~a~a" prefix suffix) :cl-sat.aux-variables))
 
 
 (defun symbolicate-form (tree)

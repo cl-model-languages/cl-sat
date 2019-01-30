@@ -22,7 +22,9 @@
    #:*verbosity*
    #:parse-dimacs-output
    #:imply
-   #:iff))
+   #:iff
+   #:var
+   #:aux))
 (in-package :cl-sat)
 
 
