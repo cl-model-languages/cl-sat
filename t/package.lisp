@@ -124,7 +124,31 @@
            '(and
              (or (and a b) (and c d))
              (or (and e f) (and g h))))))
-  )
+
+  ;; checking (and) and (or)
+  
+  (is (s= '(and a c)
+          (to-cnf-naive '(and a (or c (and a (or) b))))))
+  ;;                                  ^^^^^^^^^^^^^^ == ⊥
+  
+  (is (s= (to-cnf-naive '(and a (or c (and a b))))
+          (to-cnf-naive '(and a (or c (and a (and) b))))))
+  
+  (is (s= '(and a (or c a) (or c b))
+          (to-cnf-naive '(and a (or c (and a (and) b))))))
+
+  (is (s= '(and a (or c a) (or c b))
+          (to-cnf-naive '(and a (or c (and a (and) b))))))
+
+  (is (s= '(or)
+          (to-cnf-naive '(or))))
+  (is (s= '(or)
+          (to-cnf-naive '(and (or)))))
+
+  (is (s= '(and)
+          (to-cnf-naive '(or (and)))))
+  (is (s= '(and)
+          (to-cnf-naive '(and (and))))))
 
 #+nil
 (test to-cnf-tseytin
