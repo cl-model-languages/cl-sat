@@ -249,17 +249,33 @@ G.S. Tseytin: On the complexity of derivation in propositional calculus. Present
                  ((list (or 'and 'or) single)
                   (rec single))
                  ((list* (and op (or 'and 'or)) rest)
-                  (let ((aux (ensure-gethash form subformulas (aux+))) ; no duplicates
-                        (substituted `(,op ,@(mapcar #'rec rest))))
-                    ;; add a new formula: (aux <=> substituted)  =  ((aux => substituted) && (aux <= substituted))
-                    (push `(or ,(negate aux) ,substituted) conjunctions)
-                    (push `(or ,aux ,(negate substituted)) conjunctions)
+                  (let ((aux (ensure-gethash form subformulas (aux+)))
+                        (substituted (mapcar #'rec rest)))
+                    ;; add a new formula: (aux <=> substituted)
+                    ;; =  ((aux => substituted) && (aux <= substituted))
+                    ;; =  (and (or (not aux) substituted) (or aux (not substituted)))
+                    (ecase op
+                      (and
+                       ;; (or (not aux) (and a b c)) = (and (or (not aux) a) (or (not aux) b) (or (not aux) c))
+                       (dolist (var substituted)
+                         (push `(or ,(negate aux) ,var) conjunctions))
+                       
+                       ;; (or aux (not (and a b c))) = (or aux (not a) (not b) (not c))
+                       (push `(or ,aux ,@(mapcar #'negate substituted)) conjunctions))
+                      
+                      (or
+                       ;; (or (not aux) (or a b c)) = (or aux a b c)
+                       (push `(or ,(negate aux) ,@substituted) conjunctions)
+                       
+                       ;; (or aux (not (or a b c))) = (or aux (and (not a) (not b) (not c))) = (and (or aux (not a)) (or aux (not b)) (or aux (not c)))
+                       (dolist (var substituted)
+                         (push `(or ,aux ,(negate var)) conjunctions))))
                     aux))
                  (_
                   ;; return literals as it is
                   form))))
       (push (rec form) conjunctions))
-    (to-cnf-naive (to-nnf `(and ,@conjunctions)))))
+    `(and ,@conjunctions)))
 
 
 (defun to-cnf (form &optional (converter #'to-cnf-tseytin))
