@@ -110,16 +110,48 @@ only at the leaf nodes."
 ;; Naive CNF
 
 (defun dispatch (form top k)
+  "Naive implementation that expands the inner ANDs of ORs into ORs of ANDs (potentially exponentially explode).
+Implemented using Continuation Passing Style. Calling K with a value is equivalent to returning the result of processing FORM.
+
+TOP is a boolean which, when NIL, means the current position is inside an OR."
+
   (ematch* (form top)
-    (((list 'and first) _)
+    ;; length 0
+
+    (((list _) _)
+     ;; always satisfiable (and) or unsatisfiable (or).
+     ;; return the form as it is.
+     (funcall k form))
+
+    ;; length 1
+    (((list 'not _) _)
+     (funcall k form))
+    
+    (((list _ first) _)
+     ;; (and x) is equivalent to x, (or x) is equivalent to x.
      (dispatch first top k))
 
+    ;; length >= 2
+    
+    (((list* 'and rest) _)
+     ;; (and (or)) --- does not come in here.
+     (cond
+       ((find '(or) rest :test 'equal)
+        ;; the entire AND is unsatisfiable.
+        (funcall k '(or)))
+       ((find '(and) rest :test 'equal)
+        ;; the clause can be ignored.
+        (dispatch (remove '(and) form :test 'equal) top k))
+       (t
+        (trivia.skip:skip))))
+    
     (((list* 'and rest) t)
      ;; if top=t, we are in a toplevel AND, which is allowed in CNF.
      ;; Continuations are cut and evaluated immediately.
      ;;
      ;; note: each dispatch for AND returns a list which lacks AND as the first element.
      (funcall k `(and ,@(mappend (lambda (e)
+                                   ;; (format *trace-output* "~&Top AND callback~%")
                                    (match (dispatch e t #'identity)
                                      ((list* 'and rest) rest)
                                      (it                (list it))))
@@ -133,9 +165,14 @@ only at the leaf nodes."
      ;; continuation k is a function that returns a form (or Q X R ) given X, thus we call it with each element.
      (dispatch first t
                (lambda (result1)
+                 ;; (format *trace-output* "~&AND callback in OR~%")
                  (match* ((funcall k result1)             ; == process A --> (or Q A R)
                           (dispatch `(and ,@rest) nil k)) ; == process (and B C) --> (and (or Q B R) (or Q C R))
                    ;; merge ANDs while removing redundancy
+                   (('(and) it) it)
+                   ((it '(and)) it)
+                   (('(or) _) '(or))
+                   ((_ '(or)) '(or))
                    (((list* 'and result1) (list* 'and result2))
                     `(and ,@result1 ,@result2))
                    ((it (list* 'and result2)) ; <-- above case ends up here
@@ -144,12 +181,18 @@ only at the leaf nodes."
                     `(and ,@result1 ,it))
                    ((it1 it2)
                     `(and ,it1 ,it2))))))
-    
-    ;; unsat
-    ;; (((list  'or)  _))
 
-    (((list  'or first)  _)                  ; == first
-     (dispatch first top k))
+    (((list* 'or rest) _)
+     ;; (or (and)) --- does not come in here.
+     (cond
+       ((find '(and) rest :test 'equal)
+        ;; the entire OR is always satisfiable.
+        (funcall k '(and)))
+       ((find '(or) rest :test 'equal)
+        ;; the clause can be ignored.
+        (dispatch (remove '(or) form :test 'equal) top k))
+       (t
+        (trivia.skip:skip))))
 
     (((list* 'or first rest) _)
      (dispatch first nil
@@ -159,18 +202,22 @@ only at the leaf nodes."
                            (lambda (result2)
                              ;; (format *trace-output* "~& entered the 2nd OR callback: ~a ~%" result2)
                              (funcall k
-                                      (match* (result1 result2)
-                                        ;; merge ORs while removing redundancy
-                                        (((list* 'or result1) (list* 'or result2))
-                                         `(or ,@result1 ,@result2))
-                                        ((it (list* 'or result2))
-                                         `(or ,it ,@result2))
-                                        (((list* 'or result1) it)
-                                         `(or ,@result1 ,it))
-                                        ((it1 it2)
-                                         `(or ,it1 ,it2)))))))))
-    (((list 'not _) _)
-     (funcall k form))
+                                      (progn
+                                        ;; format1 *trace-output* "~& continue: ~a ~%"
+                                         (match* (result1 result2)
+                                           ;; merge ORs while removing redundancy
+                                           (('(or) it) it)
+                                           ((it '(or)) it)
+                                           (('(and) _) '(and))
+                                           ((_ '(and)) '(and))
+                                           (((list* 'or result1) (list* 'or result2))
+                                            `(or ,@result1 ,@result2))
+                                           ((it (list* 'or result2))
+                                            `(or ,it ,@result2))
+                                           (((list* 'or result1) it)
+                                            `(or ,@result1 ,it))
+                                           ((it1 it2)
+                                            `(or ,it1 ,it2))))))))))
     (((symbol) _)
      (funcall k form))))
 
