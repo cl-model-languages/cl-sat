@@ -85,6 +85,11 @@ Note that it does not guarantee to return any type of normal forms (e.g. NNF,CNF
   "Applying De-Morgan's law, the resulting tree contains negations
 only at the leaf nodes."
   (ematch form
+    ((list 'imply lhs rhs)
+     (to-nnf `(or (not ,lhs) ,rhs)))
+    ((list 'iff lhs rhs)
+     (to-nnf `(and (or (not ,lhs) ,rhs)
+                   (or (not ,rhs) ,lhs))))
     ((list* 'and rest) `(and ,@(mapcar #'to-nnf rest)))
     ((list* 'or rest)  `(or  ,@(mapcar #'to-nnf rest)))
     ((list 'not (list* 'or rest))

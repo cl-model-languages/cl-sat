@@ -25,6 +25,8 @@ Currently there are two implementations. Consult the following:
   + 2017: http://sat2018.forsyte.tuwien.ac.at/solvers/
   + [[./competition.org][Here is the list of solvers that worked.]]
 
++ 2019/1/25 :: the input formula can now contain (IMPLY lhs rhs) and (IFF lhs rhs).
+
 ** Usage
    
 In order to load and run minisat2, run follows:

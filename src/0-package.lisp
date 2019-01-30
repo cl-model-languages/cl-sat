@@ -20,7 +20,9 @@
    #:to-cnf-tseytin
    #:symbolicate-form
    #:*verbosity*
-   #:parse-dimacs-output))
+   #:parse-dimacs-output
+   #:imply
+   #:iff))
 (in-package :cl-sat)
 
 
