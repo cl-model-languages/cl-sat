@@ -33,11 +33,11 @@
           (symbolicate-form
            '(and (or a !b c) d))))
 
-  (is (s= '(and (or a cl-sat.variables::VAR1 c) d)
+  (is (s= '(and (or a cl-sat.variables::V1 c) d)
           (symbolicate-form
            '(and (or a 1 c) d))))
   
-  (is (s= '(and (or a (not cl-sat.variables::VAR1) c) d)
+  (is (s= '(and (or a (not cl-sat.variables::V1) c) d)
           (symbolicate-form
            '(and (or a -1 c) d))))
 
