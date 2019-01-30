@@ -114,7 +114,7 @@ only at the leaf nodes."
     (((list 'and first) _)
      (dispatch first top k))
 
-    (((list* 'and body) t)
+    (((list* 'and rest) t)
      ;; if top=t, we are in a toplevel AND, which is allowed in CNF.
      ;; Continuations are cut and evaluated immediately.
      ;;
@@ -123,9 +123,9 @@ only at the leaf nodes."
                                    (match (dispatch e t #'identity)
                                      ((list* 'and rest) rest)
                                      (it                (list it))))
-                                 body))))
+                                 rest))))
     
-    (((list* 'and first body) nil)
+    (((list* 'and first rest) nil)
      ;; Otherwise, we are inside ORs -- now we are at X of (and P (or Q X=(and A B C) R ) S ).
      ;; we must turn this inside-out, i.e.:
      ;; (and P (or Q X=A R ) (or Q X=B R ) (or Q X=C R ) S ).
@@ -134,7 +134,7 @@ only at the leaf nodes."
      (dispatch first t
                (lambda (result1)
                  (match* ((funcall k result1)             ; == process A --> (or Q A R)
-                          (dispatch `(and ,@body) nil k)) ; == process (and B C) --> (and (or Q B R) (or Q C R))
+                          (dispatch `(and ,@rest) nil k)) ; == process (and B C) --> (and (or Q B R) (or Q C R))
                    ;; merge ANDs while removing redundancy
                    (((list* 'and result1) (list* 'and result2))
                     `(and ,@result1 ,@result2))
@@ -151,11 +151,11 @@ only at the leaf nodes."
     (((list  'or first)  _)                  ; == first
      (dispatch first top k))
 
-    (((list* 'or first body) _)
+    (((list* 'or first rest) _)
      (dispatch first nil
                (lambda (result1)
                  ;; (format *trace-output* "~& entered the 1st OR callback: ~a ~%" result1)
-                 (dispatch `(or ,@body) nil
+                 (dispatch `(or ,@rest) nil
                            (lambda (result2)
                              ;; (format *trace-output* "~& entered the 2nd OR callback: ~a ~%" result2)
                              (funcall k
