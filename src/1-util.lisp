@@ -7,8 +7,10 @@ When DIRECTORY is non-nil, creates a directory instead.
 When DEBUG is non-nil, it does not remove the directory so that you can investigate what happened inside the directory."
   (declare (ignorable template tmpdir))
   `(let ((,var (uiop:run-program
-		 #-darwin (format nil "mktemp --tmpdir='~a' ~@[-d~*~] ~a" ,tmpdir ,directory ,template)
-		 #+darwin (if ,directory "mktemp -d" "mktemp")
+		 #-:BSD (format nil "mktemp --tmpdir='~a' ~@[-d~*~] ~a" ,tmpdir
+				    ,directory ,template)
+		 ;; BSD also includes Darwin (Mac OS X) (c.f. trivial-features's SPEC.md)
+		 #+:BSD (if ,directory "mktemp -d" "mktemp")
 		 :output '(:string :stripped t))))
      (unwind-protect
          (progn ,@body)
