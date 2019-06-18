@@ -4,6 +4,7 @@
 |#
 
 (in-package :cl-user)
+
 (defpackage cl-sat
   (:nicknames :sat)
   (:use :cl :trivia :alexandria :iterate)
@@ -13,7 +14,7 @@
    #:print-cnf
    #:with-temp
    #:*instance*
-   #:variables
+   #:sat-instance-variables
    #:to-nnf
    #:to-cnf
    #:to-cnf-naive
@@ -21,8 +22,6 @@
    #:symbolicate-form
    #:*verbosity*
    #:parse-dimacs-output))
+
 (in-package :cl-sat)
-
-
-
 

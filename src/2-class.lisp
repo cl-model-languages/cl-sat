@@ -31,8 +31,7 @@
          solver
          args))
 
-
-(defun variables (instance)
+(defmethod sat-instance-variables ((instance sat-instance))
   (with-slots (%variables) instance
     (if (slot-boundp instance '%variables)
         %variables
@@ -43,4 +42,3 @@
                  (flatten (cnf instance))
                  '(and or not)))
                'simple-vector)))))
-
