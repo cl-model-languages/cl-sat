@@ -2,12 +2,14 @@
 ;;;; In order to regenerate it, run update-asdf from shell (see https://github.com/phoe-krk/asd-generator)
 ;;;; For those who do not have update-asdf, run `ros install asd-generator` (if you have roswell installed)
 ;;;; There are also an interface available from lisp: (asd-generator:regen &key im-sure)
+
 (defsystem cl-sat
  :version "0.1"
  :author "Masataro Asai"
  :mailto "guicho2.71828@gmail.com"
  :license "LLGPL"
- :depends-on (:trivia :alexandria :iterate)
+ :depends-on (:trivia :alexandria :iterate
+              :trivial-features)
  :serial t
  :components ((:file "src/0-package")
               (:file "src/1-parse")
