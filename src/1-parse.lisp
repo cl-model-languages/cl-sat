@@ -91,10 +91,18 @@ only at the leaf nodes. Supports OR,AND,NOT,IMPLY,IFF."
 (defun expand-extensions (form)
   "Translate extended logical operations IMPLY, IFF into AND, OR, NOT"
   (ematch form
-    ((list 'imply lhs rhs)
+    ;; FIXME: EQ and XOR does not seem to have the identity and zero
+    ;; but correct me
+    ((list (and op (or 'imply '=> 'when 'iff 'eq 'equal '<=> 'xor)))
+     (error "malformed ~a form: ~a, takes 2 arguments" op form))
+    ((list (and op (or 'imply '=> 'when 'iff 'eq 'equal '<=> 'xor)) _)
+     (error "malformed ~a form: ~a, takes 2 arguments" op form))
+
+    ((list (or 'imply '=> 'when) lhs rhs)
      (let ((lhs (expand-extensions lhs))
            (rhs (expand-extensions rhs)))
        `(or (not ,lhs) ,rhs)))
+
     ((list 'iff lhs rhs)
      (let ((lhs (expand-extensions lhs))
            (rhs (expand-extensions rhs)))

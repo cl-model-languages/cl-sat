@@ -22,6 +22,7 @@
    #:*verbosity*
    #:parse-dimacs-output
    #:imply
+   #:=>
    #:iff
    #:<=>
    #:xor
