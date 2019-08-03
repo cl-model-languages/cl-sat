@@ -192,8 +192,8 @@ Duplicated forms:
          ((member '(or) rest :test 'equal)
           '(or))
          ((iter outer
-                (for (c1 . rest) on rest)
-                (iter (for c2 in rest)
+                (for (c1 . rest2) on rest)
+                (iter (for c2 in rest2)
                       (in outer
                           (thereis
                            (match c2
@@ -209,8 +209,8 @@ Duplicated forms:
          ((member '(and) rest :test 'equal)
           '(and))
          ((iter outer
-                (for (c1 . rest) on rest)
-                (iter (for c2 in rest)
+                (for (c1 . rest2) on rest)
+                (iter (for c2 in rest2)
                       (in outer
                           (thereis
                            (match c2
