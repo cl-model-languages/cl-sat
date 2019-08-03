@@ -162,7 +162,18 @@ only at the leaf nodes. Supports OR,AND,NOT,IMPLY,IFF."
         #'clause<))
 
 (defun simplify-nnf (form)
-  "Remove some obvious constants / conflicts"
+  "Remove some obvious constants / conflicts. The result does not contain:
+Single compound forms:
+ (and X), (or X)
+Compound forms that contains true/false consants:
+ (and ... (or) ... ) -> (or)
+ (or ... (and) ... ) -> (and)
+ (or ... X ... (not X) ... ) -> (and)
+ (and ... X ... (not X) ... ) -> (or)
+Duplicated forms:
+ (and ... X ... X ... ) -> (and ... X ... ...)
+ (or  ... X ... X ... ) -> (or  ... X ... ...)
+"
   (ematch form
     ((list 'and x) x)
     ((list 'or x) x)
@@ -182,7 +193,7 @@ only at the leaf nodes. Supports OR,AND,NOT,IMPLY,IFF."
                              ((list 'not (equal c1)) t))))))
           '(or))
          (t
-          (list* 'and rest)))))
+          (list* 'and (remove-duplicates rest :test 'equal))))))
     ((list* 'or rest)
      (let* ((rest (mapcar #'simplify-nnf rest))
             (rest (%merge-same-clauses 'or rest))
@@ -200,7 +211,7 @@ only at the leaf nodes. Supports OR,AND,NOT,IMPLY,IFF."
           ;; (or ... A ... (not A) ...)
           '(and))
          (t
-          (list* 'or rest)))))
+          (list* 'or (remove-duplicates rest :test 'equal))))))
     ;; non-nnf is rejected here
     ((list 'not (symbol))
      form)
