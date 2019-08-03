@@ -23,6 +23,8 @@
    #:parse-dimacs-output
    #:imply
    #:iff
+   #:<=>
+   #:xor
    #:var
    #:aux
    #:simplify-nnf

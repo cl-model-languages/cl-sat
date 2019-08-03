@@ -100,6 +100,18 @@ only at the leaf nodes. Supports OR,AND,NOT,IMPLY,IFF."
            (rhs (expand-extensions rhs)))
        `(and (or (not ,lhs) ,rhs)
              (or (not ,rhs) ,lhs))))
+
+    ((list* (or 'eq 'equal '<=>) rest)
+     `(and
+       ,@(iter outer
+               (for (e1 . rest2) on rest)
+               (iter (for e2 in rest2)
+                     (in outer
+                         (collect (expand-extensions `(iff ,e1 ,e2))))))))
+
+    ((list* 'xor first rest)
+     `(not ,(expand-extensions `(iff ,first (xor ,@rest)))))
+
     ((list* 'and rest) `(and ,@(mapcar #'expand-extensions rest)))
     ((list* 'or  rest) `(or  ,@(mapcar #'expand-extensions rest)))
     ((list* 'not rest) `(not ,@(mapcar #'expand-extensions rest)))
