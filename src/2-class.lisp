@@ -32,15 +32,19 @@
          args))
 
 
-(defun variables (instance)
+(defgeneric variables (instance))
+(defmethod variables :around ((instance sat-instance))
   (with-slots (%variables) instance
     (if (slot-boundp instance '%variables)
         %variables
         (setf %variables
               (coerce
-               (remove-duplicates
-                (set-difference
-                 (flatten (cnf instance))
-                 '(and or not)))
+               (call-next-method)
                'simple-vector)))))
+
+(defmethod variables ((instance sat-instance))
+  (remove-duplicates
+   (set-difference
+    (flatten (cnf instance))
+    '(and or not))))
 
