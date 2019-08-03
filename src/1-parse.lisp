@@ -116,18 +116,92 @@ only at the leaf nodes. Supports OR,AND,NOT,IMPLY,IFF."
     ((symbol)
      form)))
 
+
+(defun %merge-same-clauses (type forms)
+  (iter (for elem in forms)
+        (match elem
+          ((list* (eq type) subrest)
+           (appending subrest))
+          (_
+           (collecting elem)))))
+
+(defun symbol< (a b)
+  (match* (a b)
+    (((symbol :package p1) (symbol :package p2))
+     (cond
+       ((and (not p1) (not p2))
+        (string< a b))
+       ((and (not p1) p2)
+        t)
+       ((and p1 (not p2))
+        nil)
+       ((and p1 p2)
+        (if (eq p1 p2)
+            (string< a b)
+            (string< (package-name p1) (package-name p2))))))))
+
+(defun symbol<= (a b)
+  (or (eq a b)
+      (symbol< a b)))
+
+(defun clause< (a b)
+  (match* (a b)
+    (((symbol) (symbol))
+     (symbol< a b))
+    (((symbol) (type list))
+     t)
+    (((type list) (symbol))
+     nil)
+    (((list* f1 r1) (list* f2 r2))
+     (or (clause< f1 f2)
+         (and (equal f1 f2)
+              (some #'clause< r1 r2))))))
+
+(defun %sort-clauses (forms)
+  (sort (copy-list forms)
+        #'clause<))
+
 (defun simplify-nnf (form)
+  "Remove some obvious constants / conflicts"
   (ematch form
+    ((list 'and x) x)
+    ((list 'or x) x)
     ((list* 'and rest)
-     (let ((rest (mapcar #'simplify-nnf rest)))
-       (if (member '(or) rest :test 'equal)
-           '(or)
-           rest)))
+     (let* ((rest (mapcar #'simplify-nnf rest))
+            (rest (%merge-same-clauses 'and rest))
+            (rest (%sort-clauses rest)))
+       (cond
+         ((member '(or) rest :test 'equal)
+          '(or))
+         ((iter outer
+                (for (c1 . rest) on rest)
+                (iter (for c2 in rest)
+                      (in outer
+                          (thereis
+                           (match c2
+                             ((list 'not (equal c1)) t))))))
+          '(or))
+         (t
+          (list* 'and rest)))))
     ((list* 'or rest)
-     (let ((rest (mapcar #'simplify-nnf rest)))
-       (if (member '(and) rest :test 'equal)
-           '(and)
-           rest)))
+     (let* ((rest (mapcar #'simplify-nnf rest))
+            (rest (%merge-same-clauses 'or rest))
+            (rest (%sort-clauses rest)))
+       (cond
+         ((member '(and) rest :test 'equal)
+          '(and))
+         ((iter outer
+                (for (c1 . rest) on rest)
+                (iter (for c2 in rest)
+                      (in outer
+                          (thereis
+                           (match c2
+                             ((list 'not (equal c1)) t))))))
+          ;; (or ... A ... (not A) ...)
+          '(and))
+         (t
+          (list* 'or rest)))))
+    ;; non-nnf is rejected here
     ((list 'not (symbol))
      form)
     ((symbol)
