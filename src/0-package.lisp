@@ -29,7 +29,8 @@
    #:var
    #:aux
    #:simplify-nnf
-   #:to-anf))
+   #:to-anf
+   #:expand-extensions))
 (in-package :cl-sat)
 
 

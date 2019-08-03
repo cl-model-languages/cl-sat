@@ -85,11 +85,16 @@ It accepts any types of compound forms, not limited to AND/OR/NOT.
 
 (defun to-nnf (form)
   "Applying De-Morgan's law, the resulting tree contains negations
-only at the leaf nodes. Supports OR,AND,NOT,IMPLY,IFF."
+only at the leaf nodes. Calls expand-extensions internally."
   (simplify-nnf (%to-nnf (expand-extensions form))))
 
 (defun expand-extensions (form)
-  "Translate extended logical operations IMPLY, IFF into AND, OR, NOT"
+  "Translates extended logical operations into AND, OR, NOT.
+ IMPLY, =>, WHEN (synonyms),
+ IFF,
+ EQ, EQUAL, <=> (synonyms, a variation of IFF that takes multiple statements),
+ XOR.
+"
   (ematch form
     ;; FIXME: EQ and XOR does not seem to have the identity and zero
     ;; but correct me
@@ -189,10 +194,10 @@ only at the leaf nodes. Supports OR,AND,NOT,IMPLY,IFF."
         #'clause<))
 
 (defun simplify-nnf (form)
-  "Remove some obvious constants / conflicts. The result does not contain:
+  "Remove some obvious constants / conflicts in the form. The result does not contain:
 Single compound forms:
  (and X), (or X)
-Compound forms that contains true/false consants:
+Compound forms containing true/false constants:
  (and ... (or) ... ) -> (or)
  (or ... (and) ... ) -> (and)
  (or ... X ... (not X) ... ) -> (and)
@@ -486,6 +491,9 @@ G.S. Tseytin: On the complexity of derivation in propositional calculus. Present
 
 
 (defun to-cnf (form &optional (converter #'to-cnf-tseytin))
+  "Translates the results to a CNF.
+Calls SYMBOLICATE-FORM and TO-NNF internally.
+CONVERTER argument specifies which algorithm to use for the conversion, default: #'to-cnf-tseytin."
   (funcall converter
            (to-nnf
             (symbolicate-form form))))
