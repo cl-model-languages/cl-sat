@@ -51,7 +51,9 @@ In order to load and run minisat2, run follows:
 : T
 : T
 
-** solver API
+** Solver API
+
+=(solve pathname (eql :solvername) &rest options)=
 
 Each solver implementation should provide a method =(solve pathname (eql :solvername) &rest options)=.
 Additional arguments are passed to the underlying solvers (unless explicitly specified).
@@ -67,6 +69,11 @@ boolean indicating whether the result is determined. For example,
   or false.
 
 ** S-exp -> CNF converter
+
+=(to-cnf form &optional converter)=
+
+This function converting a logical form in the format specified below a CNF.
+=converter= argument specifies which algorithm to use for convergeon, defaulting to =#'to-cnf-tseytin=.
 
 The input list can be an arbitrary propositional formula containing =or=, =and=, =not=.
 =AND= and =OR= are sometimes implied (e.g. a single atom without any conjunction/disjunction). 
