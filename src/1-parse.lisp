@@ -85,7 +85,7 @@ It accepts any types of compound forms, not limited to AND/OR/NOT.
 
 (defun to-nnf (form)
   "Applying De-Morgan's law, the resulting tree contains negations
-only at the leaf nodes."
+only at the leaf nodes. Supports OR,AND,NOT,IMPLY,IFF."
   (ematch form
     ((list 'imply lhs rhs)
      (to-nnf `(or (not ,lhs) ,rhs)))
@@ -94,6 +94,7 @@ only at the leaf nodes."
                    (or (not ,rhs) ,lhs))))
     ((list* 'and rest) `(and ,@(mapcar #'to-nnf rest)))
     ((list* 'or rest)  `(or  ,@(mapcar #'to-nnf rest)))
+    ;; negated
     ((list 'not (list* 'or rest))
      ;; De-Morgan's law
      `(and ,@(mapcar (compose #'to-nnf #'negate) rest)))
@@ -104,9 +105,11 @@ only at the leaf nodes."
      (to-nnf further))
     ((list 'not (symbol))
      form)
+    ((list 'not (list 'imply lhs rhs))
+     (to-nnf `(and ,lhs (not ,rhs))))
     ((list 'not (list 'iff lhs rhs))
-     (to-nnf `(or (and (not ,lhs) ,rhs)
-                  (and (not ,rhs) ,lhs))))
+     (to-nnf `(or (and ,lhs (not ,rhs))
+                  (and ,rhs (not ,lhs)))))
     ((symbol)
      form)))
 
