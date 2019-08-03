@@ -86,29 +86,32 @@ It accepts any types of compound forms, not limited to AND/OR/NOT.
 (defun to-nnf (form)
   "Applying De-Morgan's law, the resulting tree contains negations
 only at the leaf nodes. Supports OR,AND,NOT,IMPLY,IFF."
+  (simplify-nnf (%to-nnf form)))
+
+(defun %to-nnf (form)
   (ematch form
     ((list 'imply lhs rhs)
-     (to-nnf `(or (not ,lhs) ,rhs)))
+     (%to-nnf `(or (not ,lhs) ,rhs)))
     ((list 'iff lhs rhs)
-     (to-nnf `(and (or (not ,lhs) ,rhs)
-                   (or (not ,rhs) ,lhs))))
-    ((list* 'and rest) `(and ,@(mapcar #'to-nnf rest)))
-    ((list* 'or rest)  `(or  ,@(mapcar #'to-nnf rest)))
+     (%to-nnf `(and (or (not ,lhs) ,rhs)
+                    (or (not ,rhs) ,lhs))))
+    ((list* 'and rest) `(and ,@(mapcar #'%to-nnf rest)))
+    ((list* 'or rest)  `(or  ,@(mapcar #'%to-nnf rest)))
     ;; negated
     ((list 'not (list* 'or rest))
      ;; De-Morgan's law
-     `(and ,@(mapcar (compose #'to-nnf #'negate) rest)))
+     `(and ,@(mapcar (compose #'%to-nnf #'negate) rest)))
     ((list 'not (list* 'and rest))
      ;; De-Morgan's law
-     `(or  ,@(mapcar (compose #'to-nnf #'negate) rest)))
+     `(or  ,@(mapcar (compose #'%to-nnf #'negate) rest)))
     ((list 'not (list 'not further))
-     (to-nnf further))
+     (%to-nnf further))
     ((list 'not (symbol))
      form)
     ((list 'not (list 'imply lhs rhs))
-     (to-nnf `(and ,lhs (not ,rhs))))
+     (%to-nnf `(and ,lhs (not ,rhs))))
     ((list 'not (list 'iff lhs rhs))
-     (to-nnf `(or (and ,lhs (not ,rhs))
+     (%to-nnf `(or (and ,lhs (not ,rhs))
                   (and ,rhs (not ,lhs)))))
     ((symbol)
      form)))
