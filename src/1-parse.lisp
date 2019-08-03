@@ -182,11 +182,13 @@ Duplicated forms:
  (or  ... X ... X ... ) -> (or  ... X ... ...)
 "
   (ematch form
+    ((list 'and) form)
+    ((list 'or)  form)
     ((list 'and x) x)
-    ((list 'or x) x)
+    ((list 'or  x) x)
     ((list* 'and rest)
      (let* ((rest (mapcar #'simplify-nnf rest))
-            (rest (%merge-same-clauses 'and rest))
+            (rest (%merge-same-clauses 'and rest)) ; (and) is eliminated here
             (rest (%sort-clauses rest)))
        (cond
          ((member '(or) rest :test 'equal)
@@ -200,10 +202,15 @@ Duplicated forms:
                              ((list 'not (equal c1)) t))))))
           '(or))
          (t
-          (list* 'and (remove-duplicates rest :test 'equal))))))
+          (match (remove-duplicates rest :test 'equal)
+            ((list x) x)
+            (nil
+             (error "should not happen!"))
+            (result
+             (list* 'and result)))))))
     ((list* 'or rest)
      (let* ((rest (mapcar #'simplify-nnf rest))
-            (rest (%merge-same-clauses 'or rest))
+            (rest (%merge-same-clauses 'or rest)) ;(or) is eliminated here
             (rest (%sort-clauses rest)))
        (cond
          ((member '(and) rest :test 'equal)
@@ -218,7 +225,12 @@ Duplicated forms:
           ;; (or ... A ... (not A) ...)
           '(and))
          (t
-          (list* 'or (remove-duplicates rest :test 'equal))))))
+          (match (remove-duplicates rest :test 'equal)
+            ((list x) x)
+            (nil
+             (error "should not happen!"))
+            (result
+             (list* 'or result)))))))
     ;; non-nnf is rejected here
     ((list 'not (symbol))
      form)
