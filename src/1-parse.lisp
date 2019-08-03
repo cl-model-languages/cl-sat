@@ -205,7 +205,8 @@ Duplicated forms:
           (match (remove-duplicates rest :test 'equal)
             ((list x) x)
             (nil
-             (error "should not happen!"))
+             ;; happens when rest = '((and) (and)) is reduced by %merge-same-clauses
+             `(and))
             (result
              (list* 'and result)))))))
     ((list* 'or rest)
@@ -228,7 +229,8 @@ Duplicated forms:
           (match (remove-duplicates rest :test 'equal)
             ((list x) x)
             (nil
-             (error "should not happen!"))
+             ;; happens when rest = '((or) (or)) is reduced by %merge-same-clauses
+             `(or))
             (result
              (list* 'or result)))))))
     ;; non-nnf is rejected here
