@@ -102,6 +102,16 @@ a ;; -> equivalent to (and (or a))
 (or (and a b) (and b c)) ; -> (and (or aux1 aux2) (or (not aux1) a) (or aux1 (not a) (not b)) ...)
 #+END_SRC
 
+** Helper functions
+
+=(var suffix &optional (prefix "V"))=
+
+This function interns SUFFIX (usually a number, but can be any printable object) to a symbol with the optional PREFIX.
+The new symbol is interned in a package =CL-SAT.VARIABLES= .
+
+This function is particularly useful for implementing some SAT encoding of other
+problems, such as knapsack or bin-packing problem.
+
 ** Dependencies
 
 Required libraries depends on the solver instance. See the corresponding documentation.
