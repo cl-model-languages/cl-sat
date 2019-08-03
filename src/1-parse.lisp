@@ -124,7 +124,6 @@ only at the leaf nodes. Supports OR,AND,NOT,IMPLY,IFF."
     ((symbol)
      form)))
 
-
 (defun %merge-same-clauses (type forms)
   (iter (for elem in forms)
         (match elem
@@ -225,6 +224,60 @@ Duplicated forms:
      form)
     ((symbol)
      form)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ANF (wip)
+
+(defun to-anf (form)
+  "Convert an arbitrary logical form into an algebraic normal form consisting of XOR, AND, and T."
+  (%to-anf (expand-extensions form)))
+
+(defun %to-anf (form)
+  (flet ((%xor (forms)
+           ;; eliminate when there are even number of appearances
+           (iter (for form in (%merge-same-clauses 'xor forms))
+                 (with acc = nil)
+                 (if (member form acc :test 'equal)
+                     (setf acc (delete form acc :test 'equal))
+                     (push form acc))
+                 (finally
+                  (return
+                    (match acc
+                      ((list x) x)
+                      (_ `(xor ,@(%sort-clauses acc)))))))))
+    (ematch form
+      ((symbol)      form)
+      ((list 'and)   t)
+      ((list 'or)    `(xor t t))
+      ((list 'and x) (%to-anf x))
+      ((list 'or  x) (%to-anf x))
+      
+      ((list 'not x)
+       (%xor (list t (%to-anf x))))
+
+      ((list* 'or x rest)
+       (%xor (list (%to-anf x)
+                   (%to-anf `(or ,@rest))
+                   (%to-anf `(and ,x (or ,@rest))))))
+      
+      ((list* 'and rest)
+       (let* ((elems (%merge-same-clauses 'and (mapcar #'%to-anf rest)))
+              xors others)
+         (iter (for elem in elems)
+               (match elem
+                 ((list* 'xor args)
+                  (push args xors))
+                 (_
+                  (push elem others))))
+         (if xors
+             (%xor (apply #'alexandria:map-product
+                          (lambda (&rest args) `(and ,@(append args others)))
+                          xors))
+             `(and ,@others)))))))
+
+;; (cl-sat:to-anf '(or a b (and c (and d (not e)) (and f (or g h)))))
+;; (cl-sat:to-anf '(or a b))
+;; (cl-sat:to-anf '(or (not (not b)) a))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Naive CNF

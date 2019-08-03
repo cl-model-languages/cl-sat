@@ -25,7 +25,8 @@
    #:iff
    #:var
    #:aux
-   #:simplify-nnf))
+   #:simplify-nnf
+   #:to-anf))
 (in-package :cl-sat)
 
 
