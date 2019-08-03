@@ -103,6 +103,9 @@ only at the leaf nodes."
      (to-nnf further))
     ((list 'not (symbol))
      form)
+    ((list 'not (list 'iff lhs rhs))
+     (to-nnf `(or (and (not ,lhs) ,rhs)
+                  (and (not ,rhs) ,lhs))))
     ((symbol)
      form)))
 
