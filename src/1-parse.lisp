@@ -113,6 +113,23 @@ only at the leaf nodes. Supports OR,AND,NOT,IMPLY,IFF."
     ((symbol)
      form)))
 
+(defun simplify-nnf (form)
+  (ematch form
+    ((list* 'and rest)
+     (let ((rest (mapcar #'simplify-nnf rest)))
+       (if (member '(or) rest :test 'equal)
+           '(or)
+           rest)))
+    ((list* 'or rest)
+     (let ((rest (mapcar #'simplify-nnf rest)))
+       (if (member '(and) rest :test 'equal)
+           '(and)
+           rest)))
+    ((list 'not (symbol))
+     form)
+    ((symbol)
+     form)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Naive CNF
 
