@@ -44,8 +44,9 @@ The new symbol is interned in package CL-SAT.VARIABLES."
 (defun symbolicate-form (tree)
   "
 This function is the first step of converting the input into a normal form.
-It normalizes the input tree containing numbers and !-negated vars into AND-OR-NOT tree of symbols.
+It normalizes the input tree containing numbers and !-negated vars into a tree of symbols.
 Note that it does not guarantee to return any type of normal forms (e.g. NNF,CNF,DNF,ANF).
+It accepts any types of compound forms, not limited to AND/OR/NOT.
 "
   (ematch tree
     ((symbol name)
