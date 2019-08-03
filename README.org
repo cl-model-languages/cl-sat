@@ -25,33 +25,40 @@ Currently there are two implementations. Consult the following:
   + 2017: http://sat2018.forsyte.tuwien.ac.at/solvers/
   + [[./competition.org][Here is the list of solvers that worked.]]
 
++ 2019/1/25 :: the input formula can now contain (IMPLY lhs rhs) and (IFF lhs rhs).
++ 2019/3/6 :: the input formula can contain more operations. See description below
+
 ** Usage
    
 In order to load and run minisat2, run follows:
 
-: (ql:quickload :cl-sat.minisat)
-:
-: (cl-sat:solve '(and (or a b) (or a !b c)) :minisat)
-: ->
-: (C B)
-: T
-: T
+#+begin_src lisp
+(ql:quickload :cl-sat.minisat)
 
-: (ql:quickload :cl-sat.glucose)
-:
-: (cl-sat:solve '(and (or a b) (or a !b c)) :glucose)
-: ->
-: (C B)
-: T
-: T
+(cl-sat:solve '(and (or a b) (or a !b c)) :minisat)
+->
+(C B)
+T
+T
 
-: (cl-sat:solve '(and (or a b) (or a !b c)) :competition :year 2018 :track "main_and_glucose_hack" :name "Lingeling")
-: ->
-: (C B A)
-: T
-: T
+(ql:quickload :cl-sat.glucose)
 
-** solver API
+(cl-sat:solve '(and (or a b) (or a !b c)) :glucose)
+->
+(C B)
+T
+T
+
+(cl-sat:solve '(and (or a b) (or a !b c)) :competition :year 2018 :track "main_and_glucose_hack" :name "Lingeling")
+->
+(C B A)
+T
+T
+#+end_src
+
+** Solver API
+
+*Generic function* =(solve pathname (eql :solvername) &rest options)=
 
 Each solver implementation should provide a method =(solve pathname (eql :solvername) &rest options)=.
 Additional arguments are passed to the underlying solvers (unless explicitly specified).
@@ -66,14 +73,24 @@ boolean indicating whether the result is determined. For example,
   which is a list of variables that don't matter: it can be either true
   or false.
 
-** S-exp -> CNF converter
+** Input format
 
-The input list can be an arbitrary propositional formula containing =or=, =and=, =not=.
-=AND= and =OR= are sometimes implied (e.g. a single atom without any conjunction/disjunction). 
-Negated/false atoms are specified by =(not <atom>)=.
+Users will most often use the method specialized to
+the S-exp interface =(solve list (eql :solvername) &rest options)=.
+
+=list= is a cons tree of symbols as an arbitrary propositional formula.
+The following logical operators are supported:
+
++ =or=
++ =and=
++ =not=
++ =imply => when= (synonyms)
++ =iff=
++ =eq equal <=>= (synonyms, variations of IFF that take multiple statements)
++ =xor=
 
 Each term can be specified by a symbol or a number, but do not mix two styles (it may contain bugs).
-Symbols with =!= prefix and negative numbers are treated as false atoms.
+Symbols with =!= prefix and negative numbers are interpreted as the negated atoms: =!A= is same as =(not A)=.
 
 These are internally converted into a NNF via De Morgan's law and then to a CNF via Tseytin transformation.
 
@@ -92,6 +109,55 @@ a ;; -> equivalent to (and (or a))
 
 (or (and a b) (and b c)) ; -> (and (or aux1 aux2) (or (not aux1) a) (or aux1 (not a) (not b)) ...)
 #+END_SRC
+
+** S-exp converters
+
+Users might also be interested in the functions used for processing the logical formula.
+
++ =(symbolicate-form form)= ::
+     This function is the first step of converting the input into a normal form.
+     It normalizes the input tree containing numbers and !-negated vars into a tree of symbols.
+     Note that it does not guarantee to return any type of normal forms (e.g. NNF,CNF,DNF,ANF).
+     It accepts any types of compound forms, not limited to AND/OR/NOT.
+
++ =(expand-extensions form)= :: 
+     Translates extended logical operations into AND, OR, NOT. It support the following operations:
+     + =IMPLY, =>, WHEN= (synonyms),
+     + =IFF=,
+     + =EQ, EQUAL, <=>= (synonyms, a variation of IFF that takes multiple statements),
+     + =XOR=.
+
++ =(simplify-nnf form)= ::
+     Remove some obvious constants / conflicts in the NNF. The result does not contain:
+     + Single compound forms:
+       + (and X), (or X)
+     + Compound forms containing true/false constants:
+       + =(and ... (or) ... ) -> (or)=
+       + =(or ... (and) ... ) -> (and)=
+       + =(or ... X ... (not X) ... ) -> (and)=
+       + =(and ... X ... (not X) ... ) -> (or)=
+     + Duplicated forms:
+       + =(and ... X ... X ... ) -> (and ... X ... ...)=
+       + =(or  ... X ... X ... ) -> (or  ... X ... ...)=
+
++ =(to-nnf form)= ::
+     Applying De-Morgan's law, the resulting tree contains negations
+     only at the leaf nodes. Calls =expand-extensions= and =simplify-nnf= internally.
+
++ =(to-cnf form &optional converter)= ::
+     Translates the results to a CNF.
+     Calls =symbolicate-form= and =to-nnf= internally.
+     =converter= argument specifies which algorithm to use for the conversion, defaulting to =#'to-cnf-tseytin=.
+
+** Helper functions
+
+=(var suffix &optional (prefix "V"))=
+
+This function interns SUFFIX (usually a number, but can be any printable object) to a symbol with the optional PREFIX.
+The new symbol is interned in a package =CL-SAT.VARIABLES= .
+
+This function is particularly useful for implementing some SAT encoding of other
+problems, such as knapsack or bin-packing problem.
 
 ** Dependencies
 

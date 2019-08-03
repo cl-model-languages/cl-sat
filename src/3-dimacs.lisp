@@ -101,7 +101,7 @@
 
         (with sure = nil)
         (with satisfiable = nil)
-        (with assignments = (make-array (length (sat-instance-variables instance))
+        (with assignments = (make-array (length (variables instance))
                                         :element-type '(integer 0 2)
                                         :initial-element 2))
 
@@ -128,7 +128,7 @@
 
         (finally
          (iter (for a in-vector assignments with-index i)
-               (for v = (aref (sat-instance-variables instance) i))
+               (for v = (aref (variables instance) i))
                (case a
                  (1 (when (not (eq (find-package :cl-sat.aux-variables)
                                    (symbol-package v)))
@@ -143,7 +143,7 @@
 (defun parse-assignments (file instance)
   (iter (for assignment in-file file)
         (check-type assignment integer)
-        (with variables = (sat-instance-variables instance))
+        (with variables = (variables instance))
         (when (plusp assignment)
           (let ((variable (aref variables (1- assignment))))
             (when (not (eq (find-package :cl-sat.aux-variables)
@@ -161,7 +161,7 @@
   (iter (for assignment in-file file)
         (when (not (integerp assignment))
           (next-iteration))
-        (with variables = (sat-instance-variables instance))
+        (with variables = (variables instance))
         (when (plusp assignment)
           (let ((variable (aref variables (1- assignment))))
             (when (not (eq (find-package :cl-sat.aux-variables)

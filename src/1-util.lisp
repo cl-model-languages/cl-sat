@@ -14,3 +14,6 @@ When DEBUG is non-nil, it does not remove the directory so that you can investig
            (uiop:run-program (format nil "rm -rf ~a" (namestring ,var)) :ignore-error-status t)))))
 
 
+(defun format1 (stream format-control first-arg &rest more-args)
+  (apply #'format stream format-control first-arg more-args)
+  first-arg)
