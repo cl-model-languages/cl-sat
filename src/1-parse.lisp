@@ -184,8 +184,8 @@ Duplicated forms:
   (ematch form
     ((list 'and) form)
     ((list 'or)  form)
-    ((list 'and x) x)
-    ((list 'or  x) x)
+    ((list 'and x) (simplify-nnf x))
+    ((list 'or  x) (simplify-nnf x))
     ((list* 'and rest)
      (let* ((rest (mapcar #'simplify-nnf rest))
             (rest (%merge-same-clauses 'and rest)) ; (and) is eliminated here
