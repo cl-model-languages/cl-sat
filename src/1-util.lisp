@@ -7,10 +7,19 @@ When DIRECTORY is non-nil, creates a directory instead.
 When DEBUG is non-nil, it does not remove the directory so that you can investigate what happened inside the directory."
   (declare (ignorable template tmpdir))
   `(let ((,var (uiop:run-program
-		 #-BSD (format nil "mktemp --tmpdir='~a' ~@[-d~*~] ~a" ,tmpdir
-				    ,directory ,template)
-		 ;; BSD also includes Darwin (Mac OS X) (c.f. trivial-features's SPEC.md)
-		 #+BSD (if ,directory "mktemp -d" "mktemp")
+                (cond
+                  ((member :portacle *features*)
+                   ;; The Portacle development environment comes with BusyBox, which overrides
+                   ;; the mktemp command with a simpler version.
+                   ;; See: 1) https://github.com/portacle/portacle/issues/129
+                   ;;      2) https://github.com/guicho271828/cl-sat.minisat/issues/2
+                   (format nil "mktemp ~@[-d~*~] -p ~a ~a" ,directory ,tmpdir ,template))
+                  ((member :bsd *features*)
+                   ;; BSD also includes Darwin (Mac OS X) (c.f. trivial-features's SPEC.md)
+                   (if ,directory "mktemp -d" "mktemp"))
+                  (t
+                   (format nil "mktemp --tmpdir='~a' ~@[-d~*~] ~a" ,tmpdir
+                           ,directory ,template)))
 		 :output '(:string :stripped t))))
      (unwind-protect
          (progn ,@body)
