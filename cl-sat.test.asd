@@ -4,12 +4,6 @@
 |#
 
 
-(in-package :cl-user)
-(defpackage cl-sat.test-asd
-  (:use :cl :asdf))
-(in-package :cl-sat.test-asd)
-
-
 (defsystem cl-sat.test
   :author "Masataro Asai"
   :mailto "guicho2.71828@gmail.com"

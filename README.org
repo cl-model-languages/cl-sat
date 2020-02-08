@@ -1,6 +1,8 @@
 
 * CL-SAT  - Common Lisp API to Boolean SAT Solvers
 
+[[https://travis-ci.org/cl-model-languages/cl-sat][https://travis-ci.org/cl-model-languages/cl-sat.svg?branch=master]]
+
 This library provides a simple S-exp -> CNF translator and an API to Boolean SAT solvers.
   
 It does not provide actual implementation to each solver instance by itself.

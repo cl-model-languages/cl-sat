@@ -104,12 +104,8 @@
         (with assignments = (make-array (length (variables instance))
                                         :element-type '(integer 0 2)
                                         :initial-element 2))
-
-        ;; hack for common bugs in glucose-based solvers
-        (when (equal line "WARNING: for repeatability, setting FPU to use double precision")
-          (next-iteration))
-
-        (ematch line
+        
+        (match line
           ((string* #\c _)
            ;; do nothing
            )
@@ -124,7 +120,9 @@
           ("s UNSATISFIABLE"
            (setf sure t satisfiable nil))
           ("s UNKNOWN"
-           (setf sure nil satisfiable nil)))
+           (setf sure nil satisfiable nil))
+          (_
+           (simple-style-warning "found a garbage line in the output: ~a" line)))
 
         (finally
          (iter (for a in-vector assignments with-index i)
