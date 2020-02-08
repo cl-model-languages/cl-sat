@@ -11,8 +11,7 @@ exec ros -Q -- $0 "$@"
   (uiop:quit (if (handler-case
                      (progn
                        (asdf:load-system :cl-sat.test)
-                       (eval (read-from-string "(every #'fiveam::TEST-PASSED-P (5am:run! :cl-sat))"))
-)
+                       (eval (read-from-string "(5am:run! :cl-sat)")))
                    (serious-condition (c)
                      (describe c)
                      (uiop:quit 2)))
