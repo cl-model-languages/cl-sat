@@ -1,5 +1,10 @@
 (in-package :cl-sat)
 
+;; These constants are borrowed from the tempname utility
+;; of coreutils.
+(defparameter +random-string-size-min+ 3)
+(defparameter +temp-file-attempts+ (* 62 62 62))
+
 (defmacro with-temp ((var &key directory (template "tmp.XXXXXXX") (tmpdir "/tmp/") debug) &body body)
   "Create a temporary file, then remove the file by unwind-protect.
 Most arguments are analogous to mktemp.
@@ -14,18 +19,24 @@ An error of type file-error is signalled if a unique file name can't be generate
                                    tmpdir
                                    template-without-xs
                                    (- (length template) (length template-without-xs))
-                                   3))))
+                                   +temp-file-attempts+))))
      (unwind-protect
           (progn ,@body)
        (if ,debug
            (format t "~&not removing ~a for debugging" ,var)
-           (uiop:run-program (format nil "rm -rf ~a" (namestring ,var)) :ignore-error-status t)))))
+           (if ,directory
+               (uiop:delete-directory-tree (make-pathname :directory (list :absolute ,var))
+                                           :if-does-not-exist :ignore
+                                           :validate t)
+               (delete-file ,var))))))
 
 (defun attempt-create-temp (directory base-dir name-prefix random-string-size attempts)
   "Creates a file/directory in BASE-DIR with NAME-PREFIX as a prefix of the name and RANDOM-STRING-SIZE
    random base62 characters at the end.
    Returns the name of the created file.
    Signals an error if it can't generate a unique name after ATTEMPTS attempts."
+  (when (> +random-string-size-min+ random-string-size)
+    (error "Random string part of temporary file name isn't long enough."))
   (if (<= attempts 0)
       (error "Couldn't create a unique temp file/folder.")
       (let ((path (merge-pathnames (let ((name (generate-temp-name name-prefix random-string-size)))
