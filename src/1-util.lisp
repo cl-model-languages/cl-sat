@@ -5,7 +5,7 @@
 (defparameter +random-string-size-min+ 3)
 (defparameter +temp-file-attempts+ (* 62 62 62))
 
-(defmacro with-temp ((var &key directory (template "tmp.XXXXXXX") (tmpdir "/tmp/") debug) &body body)
+(defmacro with-temp ((var &key directory (template "tmp.XXXXXXX") (tmpdir (uiop:temporary-directory)) debug) &body body)
   "Create a temporary file, then remove the file by unwind-protect.
 Most arguments are analogous to mktemp.
 TEMPLATE should be a string that ends with one or more X's, these X's will be replaced by random characters.
