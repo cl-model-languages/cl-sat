@@ -5,7 +5,7 @@
 (defparameter +random-string-size-min+ 3)
 (defparameter +temp-file-attempts+ (* 62 62 62))
 
-(defmacro with-temp ((var &key directory (template "tmp.XXXXXXX") (tmpdir (uiop:temporary-directory)) debug) &body body)
+(defmacro with-temp ((var &key directory (template "tmp.XXXXXXX") (tmpdir `(uiop:temporary-directory)) debug) &body body)
   "Create a temporary file, then remove the file by unwind-protect.
 Most arguments are analogous to mktemp.
 TEMPLATE should be a string that ends with one or more X's, these X's will be replaced by random characters.
@@ -13,26 +13,28 @@ When DIRECTORY is non-nil, creates a directory instead.
 When DEBUG is non-nil, it does not remove the directory so that you can investigate what happened inside the directory.
 An error of type file-error is signalled if a unique file name can't be generated after a number of attempts."
   (declare (ignorable template tmpdir))
-  `(let ((,var
-          (let* ((template-without-xs (string-right-trim "X" template)))
-            (attempt-create-temp directory
-                                 tmpdir
-                                 template-without-xs
-                                 (- (length template) (length template-without-xs))
-                                 +temp-file-attempts+))))
-     (unwind-protect
-          (progn ,@body)
-       (if ,debug
-           (format t "~&not removing ~a for debugging" ,var)
-           (if ,directory
-               (uiop:delete-directory-tree (make-pathname :directory (list :absolute ,var))
-                                           :if-does-not-exist :ignore
-                                           :validate t)
-               (delete-file ,var))))))
+  (once-only (template tmpdir directory debug)
+    `(let ((,var
+            (let* ((template-without-xs (string-right-trim "X" ,template)))
+              (attempt-create-temp ,directory
+                                   ,tmpdir
+                                   template-without-xs
+                                   (- (length ,template) (length template-without-xs))
+                                   +temp-file-attempts+))))
+       (unwind-protect
+            (progn ,@body)
+         (if ,debug
+             (format t "~&not removing ~a for debugging" ,var)
+             (if ,directory
+                 (uiop:delete-directory-tree (make-pathname :directory (list :absolute ,var))
+                                             :if-does-not-exist :ignore
+                                             :validate t)
+                 (delete-file ,var)))))))
 
 (defun attempt-create-temp (directory base-dir name-prefix random-string-size attempts)
   "Creates a file/directory in BASE-DIR with NAME-PREFIX as a prefix of the name and RANDOM-STRING-SIZE
    random base62 characters at the end.
+   If DIRECTORY is non-nil, creates a directory.
    Returns the name of the created file.
    Signals an error if it can't generate a unique name after ATTEMPTS attempts."
   (when (> +random-string-size-min+ random-string-size)
