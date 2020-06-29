@@ -14,12 +14,12 @@ When DEBUG is non-nil, it does not remove the directory so that you can investig
 An error of type file-error is signalled if a unique file name can't be generated after a number of attempts."
   (declare (ignorable template tmpdir))
   `(let ((,var
-           ,(let* ((template-without-xs (string-right-trim "X" template)))
-              (attempt-create-temp directory
-                                   tmpdir
-                                   template-without-xs
-                                   (- (length template) (length template-without-xs))
-                                   +temp-file-attempts+))))
+          (let* ((template-without-xs (string-right-trim "X" template)))
+            (attempt-create-temp directory
+                                 tmpdir
+                                 template-without-xs
+                                 (- (length template) (length template-without-xs))
+                                 +temp-file-attempts+))))
      (unwind-protect
           (progn ,@body)
        (if ,debug
