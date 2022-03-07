@@ -30,7 +30,8 @@
    #:aux
    #:simplify-nnf
    #:to-anf
-   #:expand-extensions))
+   #:expand-extensions
+   #:parse-assignments))
 (in-package :cl-sat)
 
 

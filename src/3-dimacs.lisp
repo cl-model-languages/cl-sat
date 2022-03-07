@@ -86,17 +86,6 @@
 ;; c Done (mycputime is 234s).
 
 (defun parse-dimacs-output (file instance)
-  (handler-case
-      (parse-true-dimacs-output file instance)
-    (match-error ()
-      (format *error-output* "~&Non-conforming output format! Assuming it is a list of variables...~%")
-      (handler-case
-          (parse-assignments file instance)
-        (type-error ()
-          (format *error-output* "~&Not a list of assignments! Trying to ignore SAT or non-numbers...~%")
-          (parse-assignments-ignoring-symbols file instance))))))
-
-(defun parse-true-dimacs-output (file instance)
   (iter (for line in-file file using #'read-line)
 
         (with sure = nil)
@@ -135,39 +124,46 @@
                                    (symbol-package v)))
                       (collect v into dont-care))))
                (finally
-                (return-from parse-true-dimacs-output
+                (return-from parse-dimacs-output
                   (values trues satisfiable sure dont-care)))))))
 
-(defun parse-assignments (file instance)
-  (iter (for assignment in-file file)
-        (check-type assignment integer)
-        (with variables = (variables instance))
-        (when (plusp assignment)
-          (let ((variable (aref variables (1- assignment))))
-            (when (not (eq (find-package :cl-sat.aux-variables)
-                           (symbol-package variable)))
-              (collect variable into trues))))
-        (finally
-         (return
-           (values trues t t)))))
 
 ;; https://dwheeler.com/essays/minisat-user-guide.html
 ;; SAT
 ;; 1 2 -3 4 5 0
 
-(defun parse-assignments-ignoring-symbols (file instance)
-  (iter (for assignment in-file file)
-        (when (not (integerp assignment))
-          (next-iteration))
-        (with variables = (variables instance))
-        (when (plusp assignment)
-          (let ((variable (aref variables (1- assignment))))
-            (when (not (eq (find-package :cl-sat.aux-variables)
-                           (symbol-package variable)))
-              (collect variable into trues))))
-        (finally
-         (return
-           (values trues t t)))))
+;; Or just assignments, e.g., in glucose
+;; 1 2 -3 4 5 0
+
+(defun parse-assignments (file instance &optional ignore-first)
+  "Parser for Minisat 2.2"
+  (let ((assignments (make-array (length (variables instance))
+                                 :element-type '(integer 0 2)
+                                 :initial-element 2)))
+    (iter
+      (for v in-file file)
+      (when (and ignore-first (first-iteration-p))
+        (check-type v symbol)
+        (assert (string= "SAT" v))
+        (next-iteration))
+      (when (= v 0)
+        (leave))
+      (setf (aref assignments (1- (abs v)))
+            (if (plusp v) 1 0)))
+    (iter
+      (for a in-vector assignments with-index i)
+      (for v = (aref (variables instance) i))
+      (case a
+        (1 (when (not (eq (find-package :cl-sat.aux-variables)
+                          (symbol-package v)))
+             (collect v into trues)))
+        (2 (when (not (eq (find-package :cl-sat.aux-variables)
+                          (symbol-package v)))
+             (collect v into dont-care))))
+      (finally
+       (return
+         (values trues t t dont-care))))))
+
 
 
 ;; todo: RUP proof in SAT competition 2009 https://www.satcompetition.org/2009/
