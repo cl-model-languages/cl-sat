@@ -4,7 +4,8 @@
 (defvar *base-url*
   `((2016 . "https://baldur.iti.kit.edu/sat-competition-2016/solvers/")
     (2017 . "https://baldur.iti.kit.edu/sat-competition-2017/solvers/")
-    (2018 . "http://sat2018.forsyte.tuwien.ac.at/solvers/")))
+    (2018 . "http://sat2018.forsyte.tuwien.ac.at/solvers/")
+    (2019 . "http://sat-race-2019.ciirc.cvut.cz/solvers/")))
 
 (define-condition competition-setup-error (error)
   ((year :initarg :year)
