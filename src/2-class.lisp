@@ -20,6 +20,11 @@
 (defvar *instance*)
 
 (defmethod solve ((*instance* sat-instance) solver &rest args &key debug &allow-other-keys)
+  ;; Remove sat-instance initargs so they aren't passed to command line
+  (remf args :form)
+  (remf args :cnf)
+  (remf args :converter)
+
   (with-temp (tmp :template "cnf.XXXXXXX" :debug debug)
     (with-output-to-file (s tmp :if-exists :supersede)
       (print-cnf *instance* s))
