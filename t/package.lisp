@@ -198,5 +198,6 @@
   (finishes (print-cnf (make-instance 'sat-instance :form '(not (or a b)))))
   (finishes (print-cnf (make-instance 'sat-instance :form '(and a !a)))))
 
-
+(test converter
+  (is (solve '(and a (not a)) :minisat :converter (constantly '(and a)))))
 
